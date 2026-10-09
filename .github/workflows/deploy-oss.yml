@@ -1,0 +1,68 @@
+name: Deploy website to OSS
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dist/index.html'
+      - '.github/workflows/deploy-oss.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: website-oss-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out website
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Check deployment inputs
+        env:
+          OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
+          OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
+        run: |
+          test -s dist/index.html
+          if [ -z "$OSS_ACCESS_KEY_ID" ] || [ -z "$OSS_ACCESS_KEY_SECRET" ]; then
+            echo "::error::Add OSS_ACCESS_KEY_ID and OSS_ACCESS_KEY_SECRET in repository Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
+      - name: Install ossutil 2.4.0
+        run: |
+          curl --fail --location --retry 3 --connect-timeout 20 --max-time 180 \
+            https://gosspublic.alicdn.com/ossutil/v2/2.4.0/ossutil-2.4.0-linux-amd64.zip \
+            -o "$RUNNER_TEMP/ossutil.zip"
+          unzip -q "$RUNNER_TEMP/ossutil.zip" -d "$RUNNER_TEMP/ossutil"
+          chmod +x "$RUNNER_TEMP/ossutil/ossutil-2.4.0-linux-amd64/ossutil"
+          echo "$RUNNER_TEMP/ossutil/ossutil-2.4.0-linux-amd64" >> "$GITHUB_PATH"
+
+      - name: Publish index.html
+        env:
+          OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
+          OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
+        run: |
+          ossutil cp dist/index.html oss://warmoria-compute/index.html \
+            --force \
+            --region cn-hangzhou \
+            --endpoint https://compute.warmoria.com \
+            --addressing-style cname \
+            --content-type 'text/html; charset=utf-8' \
+            --cache-control 'no-cache'
+
+      - name: Verify published file
+        run: |
+          curl --fail --silent --show-error --location --retry 3 --max-time 60 \
+            "https://compute.warmoria.com/index.html?deploy=$GITHUB_SHA" \
+            -o "$RUNNER_TEMP/published-index.html"
+          cmp dist/index.html "$RUNNER_TEMP/published-index.html"
+          echo "Published and verified: https://compute.warmoria.com" >> "$GITHUB_STEP_SUMMARY"
