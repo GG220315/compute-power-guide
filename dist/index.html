@@ -1,0 +1,2006 @@
+<!doctype html>
+<html lang="zh-CN" data-visualize-standalone>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>算力图解书</title>
+<meta name="description" content="从场景算力计算、配置适配、IPC组成，到真实环境验证的四章交互图解。">
+<style>:root{color-scheme:light!important;background:#fff!important}</style>
+<style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
+</head>
+<body>
+<iframe id="codex-visualization" sandbox="allow-scripts" referrerpolicy="no-referrer" title="算力图解书" data-srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot; data-visualize-standalone&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt;
+&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src &#x27;none&#x27;; script-src &#x27;unsafe-inline&#x27; &#x27;unsafe-eval&#x27; &#x27;wasm-unsafe-eval&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src &#x27;unsafe-inline&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src &#x27;none&#x27;; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;none&#x27;&quot;&gt;
+&lt;title&gt;算力图解书&lt;/title&gt;
+&lt;style&gt;:root {
+  color-scheme: light dark;
+  background-color: var(
+    --background,
+    var(--color-background-primary, light-dark(rgb(255 255 255), rgb(24 24 24)))
+  ) !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --color-background-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --card: color-mix(in oklab, var(--foreground) 5%, var(--background));
+  --card-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --popover: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255), rgb(45 45 45))
+  );
+  --popover-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --primary: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --primary-foreground: var(
+    --color-text-inverse,
+    light-dark(rgb(255 255 255), rgb(13 13 13))
+  );
+  --secondary: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%))
+  );
+  --secondary-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: var(
+    --color-text-secondary,
+    light-dark(rgb(26 28 31 / 49.4%), rgb(255 255 255 / 49.8%))
+  );
+  --accent: var(
+    --color-background-info,
+    light-dark(rgb(229 242 255), rgb(13 39 63))
+  );
+  --accent-foreground: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --destructive: var(
+    --color-text-warning,
+    light-dark(rgb(226 85 7), rgb(255 133 73))
+  );
+  --border: var(
+    --color-border-secondary,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+  --input: var(
+    --color-border-primary,
+    light-dark(
+      rgb(26 28 31 / 11.8%),
+      color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+    )
+  );
+  --ring: var(
+    --color-ring-primary,
+    light-dark(rgb(51 156 255), rgb(131 195 255 / 76%))
+  );
+  --font-size-base: var(--font-text-md-size, 14px);
+  --blue: light-dark(rgb(51 156 255), rgb(51 156 255));
+  --orange: light-dark(rgb(226 85 7), rgb(251 106 34));
+  --green: light-dark(rgb(0 162 64), rgb(64 201 119));
+  --red: light-dark(rgb(224 46 42), rgb(255 103 100));
+  --purple: light-dark(rgb(146 79 247), rgb(173 123 249));
+  --yellow: light-dark(rgb(255 195 0), rgb(255 210 64));
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(rgb(243 136 59), rgb(245 154 86));
+  --viz-series-3: light-dark(rgb(93 201 119), rgb(116 213 139));
+  --viz-series-4: light-dark(rgb(235 119 177), rgb(240 143 192));
+  --viz-series-5: light-dark(rgb(155 121 236), rgb(170 145 239));
+  --viz-series-6: light-dark(rgb(58 185 177), rgb(90 203 194));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans: -apple-system, system-ui, &quot;Segoe UI&quot;, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, &quot;SF Mono&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;,
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 430;
+  --font-weight-medium: 500;
+  --icon-size: 16px;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --corner-shape: round;
+  --radius: var(--border-radius-lg, 10px);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; viewBox=&#x27;0 0 17 17&#x27;%3E%3Cpath d=&#x27;M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z&#x27;/%3E%3C/svg%3E&quot;);
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+}
+
+:root[data-theme=&quot;light&quot;] {
+  color-scheme: light;
+}
+
+:root[data-theme=&quot;dark&quot;] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html &gt; body {
+  /* Preserve MCP aliases for older inline renderers without creating :root cycles. */
+  --color-background-primary: var(
+    --background,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --color-text-primary: var(
+    --foreground,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --color-border-secondary: var(
+    --border,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+
+  margin: 0;
+  padding: var(--visualize-paint-gutter, 0px);
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans) !important;
+  font-size: var(--font-size-normal);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+:root:not([data-app-block-surface], [data-visualize-standalone]) &gt; body {
+  padding: 12px;
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium, 500);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+
+b,
+strong,
+th {
+  font-weight: var(--font-weight-medium);
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  corner-shape: var(--corner-shape);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+}
+
+.table :is(th, td) {
+  padding-block: 10px;
+  padding-inline: 0 24px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table-responsive &gt; .table :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+.table :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.table :is(caption, thead th) {
+  font-weight: 600;
+}
+
+.table thead th {
+  padding-block: 8px;
+  border-bottom-color: color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+
+.table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+.table.table-sm :is(th, td) {
+  padding-block: 6px;
+}
+
+.table.table-sm :is(th, td):not(:last-child) {
+  padding-inline-end: 16px;
+}
+
+.table :is(.text-end, [align=&quot;right&quot;]) {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(.text-center, [align=&quot;center&quot;]) {
+  text-align: center;
+}
+
+.table .text-nowrap {
+  white-space: nowrap;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  corner-shape: var(--corner-shape);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+#widget &gt; :not(.card, .progress) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  color: var(--popover-foreground);
+  background: var(--popover);
+  box-shadow: none;
+  font-size: var(--font-size-tooltip);
+  line-height: var(--line-height-tooltip);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* The shared runtime owns data-tooltip; suppress AppBlock&#x27;s pseudo-tooltip. */
+main [data-tooltip]::after {
+  content: none;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+hr {
+  width: 100%;
+  height: 1px;
+  margin-block: 6px;
+  border: 0;
+  background: var(--border);
+}
+
+.nav {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.progress {
+  display: flex;
+  height: 8px;
+  margin-block: calc((var(--line-height-normal, 1.5em) - 8px) / 2);
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+}
+
+.progress-bar:only-child {
+  border-radius: var(--radius-full);
+}
+
+.progress-bar {
+  height: 100%;
+  flex-shrink: 0;
+  border: 0;
+  background: var(--viz-series-1);
+}
+
+.viz-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+small,
+.text-small,
+.viz-badge {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls &gt; .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls &gt; .form-label &gt; :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.nav-link,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+.btn,
+.nav-link {
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover,
+.nav-link:not(:disabled):not([aria-disabled=&quot;true&quot;]):hover {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn-primary {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: padding-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(in srgb, var(--primary-foreground) 50%, transparent);
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: padding-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.nav-pills .nav-link {
+  min-width: 0;
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.nav-justified .nav-link {
+  flex: 1 1 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.nav-pills .nav-link.active {
+  color: var(--foreground);
+  background: var(--muted);
+}
+
+.btn:disabled,
+.nav-link:disabled,
+.nav-link[aria-disabled=&quot;true&quot;] {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type=&quot;file&quot;] {
+  padding: 0;
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control[type=&quot;file&quot;]::file-selector-button {
+  min-height: 26px;
+  margin-right: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+}
+
+.form-control[type=&quot;file&quot;]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type=&quot;color&quot;] {
+  width: 40px;
+  height: 28px;
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+  corner-shape: var(--corner-shape);
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 32px 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-repeat: no-repeat;
+  background-size: 4px 4px;
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-check {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+  border-color: var(--input);
+  border-radius: var(--radius-sm);
+  corner-shape: var(--corner-shape);
+  background-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;]:checked {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: &quot;&quot;;
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+}
+
+.form-check-input[type=&quot;radio&quot;] {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+.form-check-input[type=&quot;radio&quot;]:checked {
+  border: 2px solid var(--primary);
+  background:
+    radial-gradient(circle, var(--primary-foreground) 0 2.5px, transparent 3px),
+    var(--primary);
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+  box-shadow: var(--shadow-sm);
+  content: &quot;&quot;;
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--primary);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: 0;
+  accent-color: var(--primary);
+  background: linear-gradient(
+      color-mix(in srgb, var(--foreground) 7%, transparent),
+      color-mix(in srgb, var(--foreground) 7%, transparent)
+    )
+    center / 100% 2px no-repeat;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-webkit-slider-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+  [aria-pressed=&quot;true&quot;],
+  [aria-selected=&quot;true&quot;],
+  .is-selected
+) {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.btn.viz-tile:is([aria-pressed=&quot;true&quot;], [aria-selected=&quot;true&quot;], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible,
+.nav-link:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (pointer: coarse) {
+  .btn,
+  .nav-link,
+  .form-control,
+  .form-select {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Keep small-screen WebKit from zooming when a text field receives focus. */
+  .form-control,
+  .form-select {
+    font-size: max(16px, var(--font-size-normal));
+  }
+
+  .form-control[type=&quot;file&quot;]::file-selector-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .form-control-color[type=&quot;color&quot;] {
+    width: 44px;
+    height: 44px;
+  }
+
+  .form-control:is(
+    [type=&quot;date&quot;],
+    [type=&quot;datetime-local&quot;],
+    [type=&quot;month&quot;],
+    [type=&quot;time&quot;],
+    [type=&quot;week&quot;]
+  ) {
+    min-width: 0;
+    max-width: 100%;
+    padding-block: 8px;
+  }
+
+  .form-check {
+    min-height: 44px;
+    padding-inline: 15px;
+  }
+
+  .form-check-input {
+    position: relative;
+  }
+
+  .form-check-input::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    content: &quot;&quot;;
+    transform: translate(-50%, -50%);
+  }
+
+  .form-check-label {
+    display: inline-flex;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .form-range {
+    height: 44px;
+    touch-action: pan-y;
+  }
+
+  .form-range::-webkit-slider-runnable-track {
+    height: 44px;
+  }
+
+  .form-range::-moz-range-track {
+    height: 44px;
+  }
+
+  .form-range::-webkit-slider-thumb {
+    margin-top: 12px;
+  }
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget &gt; svg {
+  width: 100%;
+}
+
+/* Model-authored chart rules can otherwise stretch icons after these styles load. */
+svg.lucide {
+  display: block;
+  width: var(--icon-size) !important;
+  height: var(--icon-size) !important;
+  flex: none;
+  margin: 0 !important;
+  stroke-width: 1.6;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+
+html&gt;body{padding:0}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;script type=&quot;application/json&quot; id=&quot;codex-visualization-widget-state&quot;&gt;__CODEX_VISUALIZATION_WIDGET_STATE__&lt;/script&gt;
+&lt;script&gt;(() =&gt; {
+  const root = document.documentElement;
+  const mediaQuery = globalThis.matchMedia(&quot;(prefers-color-scheme: dark)&quot;);
+  const apply = Reflect.apply;
+  const isArray = Array.isArray;
+  const hasOwn = Object.hasOwn;
+  const parentWindow = globalThis.parent;
+  const stringify = JSON.stringify;
+  const parse = JSON.parse;
+  const encode = TextEncoder.prototype.encode.bind(new TextEncoder());
+  const initialStateElement = document.getElementById(
+    &quot;codex-visualization-widget-state&quot;,
+  );
+  const initialGlobals = parse(initialStateElement?.textContent ?? &quot;{}&quot;);
+  initialStateElement?.remove();
+  /** @type {Record&lt;string, unknown&gt; | null} */
+  let state = initialGlobals.widgetState ?? null;
+  const statePersistence = initialGlobals.statePersistence ?? &quot;none&quot;;
+  let nextStateRequestId = 0;
+  /** @type {Map&lt;number, { resolve: () =&gt; void; reject: (error: Error) =&gt; void; timeout: ReturnType&lt;typeof globalThis.setTimeout&gt;; serializedState: string }&gt;} */
+  const pendingStateWrites = new Map();
+  const persistenceError = () =&gt;
+    Object.assign(
+      new Error(&quot;The host could not persist the widget state update&quot;),
+      {
+        code: -32000,
+        data: { code: &quot;widget_state_persistence_failed&quot;, retryable: false },
+      },
+    );
+  /**
+   * @param {object} prototype
+   * @param {string} property
+   */
+  const getPrototypeGetter = (prototype, property) =&gt; {
+    // oxlint-disable-next-line typescript/unbound-method -- invoked through captured Reflect.apply
+    const getter = Object.getOwnPropertyDescriptor(prototype, property)?.get;
+    if (getter == null) {
+      throw new Error(`Missing ${property} getter`);
+    }
+    return getter;
+  };
+  const getMessageData = getPrototypeGetter(MessageEvent.prototype, &quot;data&quot;);
+  const getMessagePorts = getPrototypeGetter(MessageEvent.prototype, &quot;ports&quot;);
+  const getMessageSource = getPrototypeGetter(MessageEvent.prototype, &quot;source&quot;);
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const addHostMessageListener = MessagePort.prototype.addEventListener;
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const postHostMessage = MessagePort.prototype.postMessage;
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const startHostPort = MessagePort.prototype.start;
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const stopMessagePropagation = Event.prototype.stopImmediatePropagation;
+  /** @type {MessagePort | null} */
+  let hostPort = null;
+  const postToHost = (type, payload) =&gt; {
+    if (hostPort != null) {
+      apply(postHostMessage, hostPort, [{ type, ...payload }]);
+    }
+  };
+  const openExternal = ({ href }) =&gt; {
+    if (globalThis.navigator.userActivation?.isActive === true) {
+      postToHost(&quot;open-external&quot;, { href });
+    }
+  };
+  const sendFollowUpMessage = ({ context, prompt, title }) =&gt; {
+    if (globalThis.navigator.userActivation?.isActive === true) {
+      postToHost(&quot;follow-up&quot;, { context, prompt, title });
+    }
+    return Promise.resolve();
+  };
+  /**
+   * @param {Record&lt;string, unknown&gt; | ((previous: Record&lt;string, unknown&gt; | null) =&gt; Record&lt;string, unknown&gt;)} next
+   * @returns {Promise&lt;void&gt;}
+   */
+  const setWidgetState = async (next) =&gt; {
+    const nextState = typeof next === &quot;function&quot; ? next(state) : next;
+    if (
+      nextState == null ||
+      typeof nextState !== &quot;object&quot; ||
+      isArray(nextState)
+    ) {
+      throw new TypeError(&quot;Widget state must be a JSON object&quot;);
+    }
+    const inputState = stringify(
+      nextState,
+      (_key, /** @type {unknown} */ value) =&gt; {
+        if (
+          typeof value === &quot;undefined&quot; ||
+          typeof value === &quot;function&quot; ||
+          typeof value === &quot;symbol&quot; ||
+          (typeof value === &quot;number&quot; &amp;&amp; !Number.isFinite(value))
+        ) {
+          throw new TypeError(&quot;Widget state must be a JSON object&quot;);
+        }
+        return value;
+      },
+    );
+    const parsedState = parse(inputState);
+    if (
+      parsedState == null ||
+      typeof parsedState !== &quot;object&quot; ||
+      isArray(parsedState)
+    ) {
+      throw new TypeError(&quot;Widget state must be a JSON object&quot;);
+    }
+    const storedState = {
+      modelContent: null,
+      privateContent: null,
+      ...parsedState,
+    };
+    const serializedState = stringify(storedState);
+    if (encode(serializedState).length &gt; 16 * 1024) {
+      throw new TypeError(
+        &quot;Widget state must be a JSON object of at most 16 KiB&quot;,
+      );
+    }
+    if (
+      hasOwn(storedState, &quot;imageIds&quot;) &amp;&amp;
+      (!isArray(storedState.imageIds) ||
+        storedState.imageIds.some(
+          (/** @type {unknown} */ id) =&gt; typeof id !== &quot;string&quot;,
+        ))
+    ) {
+      throw new TypeError(&quot;Widget state imageIds must be an array of strings&quot;);
+    }
+    if (storedState.imageIds?.length &gt; 0) {
+      throw Object.assign(
+        new TypeError(&quot;Visualization state does not support image attachments&quot;),
+        { code: -32602, data: { code: &quot;images_unsupported&quot; } },
+      );
+    }
+    state = storedState;
+    globalThis.openai.widgetState = state;
+    globalThis.dispatchEvent(
+      new CustomEvent(&quot;openai:set_globals&quot;, {
+        detail: { globals: { widgetState: state } },
+      }),
+    );
+    if (statePersistence === &quot;none&quot;) {
+      throw persistenceError();
+    }
+    const id = ++nextStateRequestId;
+    return new Promise((resolve, reject) =&gt; {
+      const timeout = globalThis.setTimeout(() =&gt; {
+        pendingStateWrites.delete(id);
+        reject(persistenceError());
+      }, 30_000);
+      pendingStateWrites.set(id, { resolve, reject, timeout, serializedState });
+      postToHost(&quot;widget-state-write&quot;, { id, state: serializedState });
+    });
+  };
+  const syncTheme = () =&gt; {
+    const theme = mediaQuery.matches ? &quot;dark&quot; : &quot;light&quot;;
+    root.dataset.theme = theme;
+    globalThis.openai = {
+      ...globalThis.openai,
+      openExternal,
+      sendFollowUpMessage,
+      setWidgetState,
+      theme,
+      visualizationStyleVariables: {},
+      visualizationTheme: theme,
+      widgetState: state,
+      statePersistence,
+      stateModelContext: &quot;none&quot;,
+    };
+    globalThis.dispatchEvent(
+      new CustomEvent(&quot;openai:set_globals&quot;, {
+        detail: { globals: globalThis.openai },
+      }),
+    );
+  };
+  const sendHeight = () =&gt; {
+    postToHost(&quot;height&quot;, {
+      height: Math.ceil(
+        Math.max(
+          document.body.scrollHeight,
+          document.body.getBoundingClientRect().height,
+        ),
+      ),
+    });
+  };
+
+  globalThis.addEventListener(
+    &quot;message&quot;,
+    (event) =&gt; {
+      const data = apply(getMessageData, event, []);
+      const ports = apply(getMessagePorts, event, []);
+      const source = apply(getMessageSource, event, []);
+      if (
+        hostPort != null ||
+        source !== parentWindow ||
+        typeof data !== &quot;object&quot; ||
+        data?.type !== &quot;codex-visualization-initialize&quot; ||
+        !isArray(ports) ||
+        ports.length !== 1
+      ) {
+        return;
+      }
+      apply(stopMessagePropagation, event, []);
+      const nextHostPort = ports[0];
+      try {
+        apply(addHostMessageListener, nextHostPort, [
+          &quot;message&quot;,
+          (event) =&gt; {
+            const data = apply(getMessageData, event, []);
+            if (typeof data === &quot;object&quot; &amp;&amp; data?.type === &quot;measure&quot;) {
+              sendHeight();
+            } else if (
+              typeof data === &quot;object&quot; &amp;&amp;
+              data?.type === &quot;widget-state-result&quot;
+            ) {
+              /** @type {unknown} */
+              const id = data.id;
+              if (typeof id !== &quot;number&quot;) {
+                return;
+              }
+              const pending = pendingStateWrites.get(id);
+              if (pending != null) {
+                pendingStateWrites.delete(id);
+                globalThis.clearTimeout(pending.timeout);
+                if (data.ok === true) {
+                  pending.resolve();
+                } else {
+                  pending.reject(persistenceError());
+                }
+              }
+            }
+          },
+        ]);
+        apply(startHostPort, nextHostPort, []);
+      } catch {
+        return;
+      }
+      hostPort = nextHostPort;
+      for (const [id, { serializedState }] of pendingStateWrites) {
+        postToHost(&quot;widget-state-write&quot;, { id, state: serializedState });
+      }
+      sendHeight();
+    },
+    { capture: true },
+  );
+  document.currentScript?.remove();
+  mediaQuery.addEventListener(&quot;change&quot;, syncTheme);
+  globalThis.addEventListener(&quot;click&quot;, (event) =&gt; {
+    if (event.defaultPrevented) {
+      return;
+    }
+    let element = null;
+    if (event.target instanceof globalThis.Element) {
+      element = event.target;
+    } else if (event.target instanceof globalThis.Node) {
+      element = event.target.parentElement;
+    }
+    const link = element?.closest(&quot;a[href]&quot;);
+    const href = link?.getAttribute(&quot;href&quot;);
+    if (href == null) {
+      return;
+    }
+    if (href.startsWith(&quot;#&quot;)) {
+      let id;
+      try {
+        id = decodeURIComponent(href.slice(1));
+      } catch {
+        return;
+      }
+      const target = id.length === 0 ? root : document.getElementById(id);
+      if (
+        target == null ||
+        globalThis.navigator.userActivation?.isActive !== true
+      ) {
+        return;
+      }
+      event.preventDefault();
+      postToHost(&quot;scroll-to&quot;, {
+        top: target.getBoundingClientRect().top + globalThis.scrollY,
+      });
+      return;
+    }
+    event.preventDefault();
+    openExternal({ href });
+  });
+  new ResizeObserver(sendHeight).observe(document.body);
+  syncTheme();
+})();
+&lt;/script&gt;
+&lt;div id=&quot;compute-book&quot;&gt;
+&lt;style&gt;
+#compute-book{color-scheme:light;background:#fff;color:#243b35;font-family:system-ui,&#x27;Microsoft YaHei&#x27;,sans-serif}
+#compute-book .book-tabs{display:flex;flex-wrap:wrap;gap:8px;padding:16px 0}
+#compute-book .book-tabs button{font:inherit;font-size:14px;padding:11px 15px;border:1px solid #bdd0c5;border-radius:6px;background:#fff;color:#245e45;cursor:pointer}
+#compute-book .book-tabs button[aria-selected=true]{background:#227659;color:#fff;border-color:#227659}
+#compute-book .book-tabs button:focus-visible{outline:3px solid #67a890;outline-offset:2px}
+#compute-book .book-pane[hidden]{display:none}
+&lt;/style&gt;
+&lt;div class=&quot;book-tabs&quot; role=&quot;tablist&quot; aria-label=&quot;算力图解书章节&quot;&gt;
+&lt;button role=&quot;tab&quot; id=&quot;book-tab-0&quot; aria-controls=&quot;book-panel-0&quot; aria-selected=&quot;false&quot; type=&quot;button&quot; data-chapter=&quot;0&quot;&gt;第一章 · 算场景&lt;/button&gt;
+&lt;button role=&quot;tab&quot; id=&quot;book-tab-1&quot; aria-controls=&quot;book-panel-1&quot; aria-selected=&quot;false&quot; type=&quot;button&quot; data-chapter=&quot;1&quot;&gt;第二章 · 选配置&lt;/button&gt;
+&lt;button role=&quot;tab&quot; id=&quot;book-tab-2&quot; aria-controls=&quot;book-panel-2&quot; aria-selected=&quot;false&quot; type=&quot;button&quot; data-chapter=&quot;2&quot;&gt;第三章 · 懂 IPC&lt;/button&gt;
+&lt;button role=&quot;tab&quot; id=&quot;book-tab-3&quot; aria-controls=&quot;book-panel-3&quot; aria-selected=&quot;true&quot; type=&quot;button&quot; data-chapter=&quot;3&quot;&gt;第四章 · 验现场&lt;/button&gt;
+&lt;/div&gt;
+&lt;section class=&quot;book-pane&quot; id=&quot;book-panel-0&quot; role=&quot;tabpanel&quot; aria-labelledby=&quot;book-tab-0&quot; hidden&gt;
+&lt;div id=&quot;compute-chapter-preview&quot;&gt;
+&lt;style&gt;
+#compute-chapter-preview{color:#243b35;background:#fff;font-family:system-ui,&#x27;Microsoft YaHei&#x27;,sans-serif;border:1px solid #e0e7e4;border-radius:12px;overflow:hidden}#compute-chapter-preview *{box-sizing:border-box}#compute-chapter-preview header{padding:20px 28px;border-bottom:1px solid #e0e7e4;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}#compute-chapter-preview .brand{font-weight:700;color:#227659}#compute-chapter-preview .edition{color:#6c7c74;font-size:14px}#compute-chapter-preview .page{display:grid;grid-template-columns:195px 1fr}#compute-chapter-preview nav{padding:24px 16px;background:#f6f9f7;border-right:1px solid #e0e7e4}#compute-chapter-preview button{font:inherit;cursor:pointer}#compute-chapter-preview nav button{display:block;width:100%;text-align:left;border:0;border-radius:6px;background:transparent;padding:12px 10px;margin-bottom:7px;color:#52665c;font-size:14px}#compute-chapter-preview nav button[aria-current=step]{background:#dfefe6;color:#155e42;font-weight:700}#compute-chapter-preview main{padding:32px;min-width:0}#compute-chapter-preview .label{color:#227659;font-size:14px}#compute-chapter-preview h2{font-size:27px;line-height:1.45;margin:10px 0 14px}#compute-chapter-preview p{font-size:16px;line-height:1.85;margin:12px 0}#compute-chapter-preview .scene{margin:25px 0;padding:20px 0;border-top:1px solid #e0e7e4;border-bottom:1px solid #e0e7e4}#compute-chapter-preview .figure-title{font-size:14px;color:#5b7065;margin-bottom:16px}#compute-chapter-preview .lane{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:center;margin:14px 0;font-size:14px}#compute-chapter-preview .frames{display:flex;gap:4px;flex-wrap:wrap}#compute-chapter-preview .frame{width:16px;height:24px;background:#dce5e0;border:1px solid #c5d3cb}#compute-chapter-preview .frame.active{background:#399c72;border-color:#287a57}#compute-chapter-preview .legend{font-size:14px;color:#5b7065}#compute-chapter-preview .fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}#compute-chapter-preview label{font-size:14px;display:block;line-height:1.6}#compute-chapter-preview input,#compute-chapter-preview select{font:inherit;font-size:16px;width:100%;margin-top:6px;padding:10px;border:1px solid #b8cbc0;border-radius:6px;background:#fff;color:#243b35}#compute-chapter-preview input[type=range]{padding:0;accent-color:#227659}#compute-chapter-preview .result{padding:20px;background:#f0f7f3;margin-top:20px;border-left:3px solid #227659}#compute-chapter-preview .result strong{font-size:23px}#compute-chapter-preview .equation{font-size:17px;line-height:1.8;margin-top:10px}#compute-chapter-preview .note{color:#617468;font-size:14px;line-height:1.75}#compute-chapter-preview .end{display:flex;justify-content:space-between;margin-top:25px;gap:15px}#compute-chapter-preview .end button{padding:10px 16px;border:1px solid #bdd0c5;border-radius:6px;background:#fff;color:#245e45}#compute-chapter-preview .end button.primary{background:#227659;color:#fff;border-color:#227659}#compute-chapter-preview .end button:disabled{opacity:.4;cursor:default}#compute-chapter-preview .tokens{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}#compute-chapter-preview .token{padding:12px;background:#ecf4ef;border-radius:6px;flex:1;min-width:110px;font-size:14px}#compute-chapter-preview .token b{display:block;font-size:20px;color:#227659}#compute-chapter-preview table{border-collapse:collapse;width:100%;font-size:14px}#compute-chapter-preview td,#compute-chapter-preview th{padding:11px 6px;border-bottom:1px solid #dbe6df;text-align:left}#compute-chapter-preview .warn{color:#925c23;background:#fff6e8;padding:12px;font-size:14px}#compute-chapter-preview button:focus-visible{outline:3px solid #67a890;outline-offset:2px}@media(max-width:720px){#compute-chapter-preview .page{display:block}#compute-chapter-preview nav{display:flex;flex-wrap:wrap;padding:10px;border-right:0}#compute-chapter-preview nav button{width:auto;flex:1 1 40%;margin:0}#compute-chapter-preview main{padding:22px}#compute-chapter-preview .fields{grid-template-columns:1fr}#compute-chapter-preview h2{font-size:23px}}
+&lt;/style&gt;
+&lt;header&gt;&lt;span class=&quot;brand&quot;&gt;算力图解书 / 包装漏装样章&lt;/span&gt;&lt;span class=&quot;edition&quot;&gt;交互样章 · 示例数据，不是项目实测&lt;/span&gt;&lt;/header&gt;
+&lt;div class=&quot;page&quot;&gt;&lt;nav aria-label=&quot;样章步骤&quot;&gt;&lt;button data-step=&quot;0&quot; aria-current=&quot;step&quot;&gt;01　先数任务，不急着选卡&lt;/button&gt;&lt;button data-step=&quot;1&quot;&gt;02　一张图要算多少次&lt;/button&gt;&lt;button data-step=&quot;2&quot;&gt;03　把单帧变成每秒需求&lt;/button&gt;&lt;button data-step=&quot;3&quot;&gt;04　现在能判断够用了吗&lt;/button&gt;&lt;/nav&gt;&lt;main&gt;&lt;div class=&quot;label&quot; id=&quot;chapter-label&quot;&gt;&lt;/div&gt;&lt;h2 id=&quot;chapter-heading&quot;&gt;&lt;/h2&gt;&lt;div id=&quot;chapter-content&quot;&gt;&lt;/div&gt;&lt;div class=&quot;end&quot;&gt;&lt;button id=&quot;chapter-prev&quot;&gt;← 上一步&lt;/button&gt;&lt;button id=&quot;chapter-next&quot; class=&quot;primary&quot;&gt;下一步 →&lt;/button&gt;&lt;/div&gt;&lt;/main&gt;&lt;/div&gt;
+&lt;script&gt;
+(function(){const root=document.getElementById(&#x27;compute-chapter-preview&#x27;);const q=s=&gt;root.querySelector(s);const state={step:0,mode:&#x27;continuous&#x27;,cameras:1,fps:2,period:20,frames:3,ops:20,known:true,benchmark:&#x27;&#x27;,p95:&#x27;&#x27;,budget:300};
+const titles=[&#x27;相机拍了 25 帧，AI 就一定要算 25 次吗？&#x27;,&#x27;一帧图像的计算量，从哪里来？&#x27;,&#x27;从“每帧多少计算”到“每秒多少计算”&#x27;,&#x27;算出了需求，还缺哪一块证据？&#x27;];
+function rate(){return state.cameras*(state.mode===&#x27;continuous&#x27;?state.fps:state.frames/state.period)}
+function fmt(n){return Number(n.toFixed(3)).toString()}
+function bind(id,key,number=true){q(&#x27;#&#x27;+id).addEventListener(&#x27;change&#x27;,e=&gt;{if(!e.target.checkValidity()||(number&amp;&amp;!e.target.value)){e.target.reportValidity();render();return}state[key]=number?Number(e.target.value):e.target.value;render()})}
+function render(){q(&#x27;#chapter-label&#x27;).textContent=&#x27;第一章 / &#x27;+(state.step+1)+&#x27; · 共 4 步&#x27;;q(&#x27;#chapter-heading&#x27;).textContent=titles[state.step];root.querySelectorAll(&#x27;[data-step]&#x27;).forEach((b,i)=&gt;{b.setAttribute(&#x27;aria-current&#x27;,i===state.step?&#x27;step&#x27;:&#x27;false&#x27;)});let html=&#x27;&#x27;;const r=rate();
+if(state.step===0){html=&#x27;&lt;p&gt;同一台相机，计算任务可以完全不同。先明确：模型要持续观察箱内状态，还是收到可靠的外部触发后，只检查几张关键帧？&lt;/p&gt;&lt;div class=&quot;fields&quot;&gt;&lt;label&gt;检测方式&lt;select id=&quot;mode&quot;&gt;&lt;option value=&quot;continuous&quot;&gt;持续视觉观察&lt;/option&gt;&lt;option value=&quot;trigger&quot;&gt;外部触发后检查&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;&lt;label&gt;相机数量&lt;input id=&quot;cams&quot; type=&quot;number&quot; min=&quot;1&quot; max=&quot;16&quot; value=&quot;&#x27;+state.cameras+&#x27;&quot;&gt;&lt;/label&gt;&#x27;+ (state.mode===&#x27;continuous&#x27;?&#x27;&lt;label&gt;每路模型处理频率：&#x27;+state.fps+&#x27; 帧/秒&lt;input id=&quot;fps&quot; type=&quot;range&quot; min=&quot;1&quot; max=&quot;25&quot; value=&quot;&#x27;+state.fps+&#x27;&quot;&gt;&lt;/label&gt;&#x27;:&#x27;&lt;label&gt;每路平均多少秒来一箱&lt;input id=&quot;period&quot; type=&quot;number&quot; min=&quot;1&quot; max=&quot;600&quot; value=&quot;&#x27;+state.period+&#x27;&quot;&gt;&lt;/label&gt;&lt;label&gt;每箱检查几张图&lt;input id=&quot;frames&quot; type=&quot;number&quot; min=&quot;1&quot; max=&quot;30&quot; value=&quot;&#x27;+state.frames+&#x27;&quot;&gt;&lt;/label&gt;&#x27;)+&#x27;&lt;/div&gt;&lt;div class=&quot;scene&quot;&gt;&lt;div class=&quot;figure-title&quot;&gt;一台相机的一秒钟 · 25 FPS 视频（示意）&lt;/div&gt;&lt;div class=&quot;lane&quot;&gt;&lt;span&gt;相机采集&lt;/span&gt;&lt;div class=&quot;frames&quot;&gt;&#x27;+Array.from({length:25},()=&gt;&#x27;&lt;i class=&quot;frame&quot;&gt;&lt;/i&gt;&#x27;).join(&#x27;&#x27;)+&#x27;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;lane&quot;&gt;&lt;span&gt;送入模型&lt;/span&gt;&lt;div class=&quot;frames&quot;&gt;&#x27;+Array.from({length:25},(_,i)=&gt;&#x27;&lt;i class=&quot;frame &#x27;+(state.mode===&#x27;continuous&#x27;&amp;&amp;Math.floor((i+1)*state.fps/25)&gt;Math.floor(i*state.fps/25)?&#x27;active&#x27;:&#x27;&#x27;)+&#x27;&quot;&gt;&lt;/i&gt;&#x27;).join(&#x27;&#x27;)+&#x27;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;legend&quot;&gt;绿色＝送入模型；灰色＝采集帧。触发模式下，平时不推理，事件到来才检查。&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;result&quot; aria-live=&quot;polite&quot;&gt;&lt;strong&gt;&#x27;+fmt(r)+&#x27; 次模型调用/秒&lt;/strong&gt;&lt;div class=&quot;equation&quot;&gt;&#x27;+(state.mode===&#x27;continuous&#x27;?state.cameras+&#x27; 路 × &#x27;+state.fps+&#x27; 帧/秒&#x27;:state.cameras+&#x27; 路 × &#x27;+state.frames+&#x27; 帧/箱 ÷ &#x27;+state.period+&#x27; 秒/箱&#x27;)+&#x27;&lt;/div&gt;&lt;/div&gt;&lt;p class=&quot;note&quot;&gt;这里假设每张选中图片调用一次模型。多 ROI、多模型或切片时，必须分别计数。Open→Closed 如果也靠 AI 识别，持续观察的计算量不能省略；触发模式也必须另外检查同时来箱的峰值。&lt;/p&gt;&#x27;;
+}else if(state.step===1){html=&#x27;&lt;p&gt;图片进入模型后会被转换为数值，再经过卷积、矩阵运算等计算。模型的 &lt;b&gt;GFLOPs/次&lt;/b&gt; 描述一次前向推理的运算量；1 GFLOP 是十亿次浮点运算，不是十亿字节显存。&lt;/p&gt;&lt;div class=&quot;tokens&quot;&gt;&lt;div class=&quot;token&quot;&gt;相机原图&lt;b&gt;1920 × 1080&lt;/b&gt;采集与传输的数据&lt;/div&gt;&lt;div class=&quot;token&quot;&gt;预处理后&lt;b&gt;640 × 640&lt;/b&gt;本例模型实际输入&lt;/div&gt;&lt;div class=&quot;token&quot;&gt;模型前向计算&lt;b&gt;&#x27;+state.ops+&#x27; GFLOPs/次&lt;/b&gt;本例假设值&lt;/div&gt;&lt;/div&gt;&lt;p&gt;相机换成 4K，但仍整图缩放到 640 × 640，模型计算量不因此自动变成 4 倍；采集和预处理压力可能增加。如果分成 4 个切片分别推理，则模型被调用 4 次。&lt;/p&gt;&lt;div class=&quot;fields&quot;&gt;&lt;label&gt;单次模型计算量的来源&lt;select id=&quot;known&quot;&gt;&lt;option value=&quot;yes&quot;&gt;使用教学示例，继续理解公式&lt;/option&gt;&lt;option value=&quot;no&quot;&gt;实际模型的计算量还不知道&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;&lt;label&gt;教学示例 GFLOPs/次&lt;input id=&quot;ops&quot; type=&quot;number&quot; min=&quot;1&quot; max=&quot;1000&quot; value=&quot;&#x27;+state.ops+&#x27;&quot;&gt;&lt;/label&gt;&lt;/div&gt;&lt;div class=&quot;result&quot;&gt;&#x27;+(state.known?&#x27;当前使用 &#x27;+state.ops+&#x27; GFLOPs/次，只演示计算方法，不对应某款指定模型。&#x27;:&#x27;未知就保持未知。可以先得到每秒调用需求，不应编一个模型系数。&#x27;)+&#x27;&lt;/div&gt;&lt;p class=&quot;note&quot;&gt;找算法工程师要：模型版本、实际输入尺寸、单次 GFLOPs、工具与计数约定（例如一次乘加计 1 次还是 2 次）。预处理、NMS、Tracker 不包含在这个前向计算量里。&lt;/p&gt;&#x27;;
+}else if(state.step===2){html=&#x27;&lt;p&gt;先把业务任务量和单次计算量相乘。两者必须对应同一个实际模型输入和调用方式。&lt;/p&gt;&lt;div class=&quot;tokens&quot;&gt;&lt;div class=&quot;token&quot;&gt;每次模型调用&lt;b&gt;&#x27;+ (state.known?state.ops+&#x27; GFLOPs&#x27;:&#x27;待测&#x27;)+&#x27;&lt;/b&gt;&lt;/div&gt;&lt;div class=&quot;token&quot;&gt;每秒模型调用&lt;b&gt;&#x27;+fmt(r)+&#x27; 次&lt;/b&gt;&lt;/div&gt;&lt;div class=&quot;token&quot;&gt;每秒运算需求&lt;b&gt;&#x27;+(state.known?fmt(r*state.ops)+&#x27; GFLOP/s&#x27;:&#x27;待测&#x27;)+&#x27;&lt;/b&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;result&quot; aria-live=&quot;polite&quot;&gt;&lt;strong&gt;&#x27;+(state.known?fmt(r*state.ops/1000)+&#x27; TFLOP/s&#x27;:&#x27;暂不能给出 TFLOP/s&#x27;)+&#x27;&lt;/strong&gt;&lt;div class=&quot;equation&quot;&gt;&#x27;+(state.known?state.ops+&#x27; GFLOPs/次 × &#x27;+fmt(r)+&#x27; 次/秒 ÷ 1000&#x27;:&#x27;已知调用频率；还缺模型单次计算量&#x27;)+&#x27;&lt;/div&gt;&lt;/div&gt;&lt;p&gt;这是&lt;b&gt;模型前向运算的需求&lt;/b&gt;，不是整台 IPC 的资源需求，也不是候选 GPU 的有效吞吐。&lt;/p&gt;&lt;div class=&quot;scene&quot;&gt;&lt;div class=&quot;figure-title&quot;&gt;保持模型和处理频率不变，扩展线体会发生什么？&lt;/div&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;部署规模&lt;/th&gt;&lt;th&gt;模型调用频率&lt;/th&gt;&lt;th&gt;模型运算需求&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&#x27;+[1,2,3].map(n=&gt;&#x27;&lt;tr&gt;&lt;td&gt;&#x27;+n+&#x27; 组当前场景&lt;/td&gt;&lt;td&gt;&#x27;+fmt(r*n)+&#x27; 次/秒&lt;/td&gt;&lt;td&gt;&#x27;+(state.known?fmt(r*state.ops*n/1000)+&#x27; TFLOP/s&#x27;:&#x27;待测&#x27;)+&#x27;&lt;/td&gt;&lt;/tr&gt;&#x27;).join(&#x27;&#x27;)+&#x27;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;&lt;p class=&quot;note&quot;&gt;触发模式这里是平均需求，不代表突发能力。不得用平均值证明“同时来箱也能按时完成”；共享解码、批处理等优化也需另行实测。&lt;/p&gt;&#x27;;
+}else{html=&#x27;&lt;p&gt;现在知道要处理多少任务了。下一步，把&lt;b&gt;同一模型、输入尺寸、精度和运行配置&lt;/b&gt;放到候选 IPC 上实测。不要用显卡广告中的 TOPS 直接除这里的 TFLOP/s。&lt;/p&gt;&lt;div class=&quot;fields&quot;&gt;&lt;label&gt;候选 IPC 实测可持续吞吐（调用/秒）&lt;input id=&quot;bench&quot; type=&quot;number&quot; min=&quot;0.01&quot; step=&quot;any&quot; placeholder=&quot;未测试，保持空白&quot; value=&quot;&#x27;+state.benchmark+&#x27;&quot;&gt;&lt;/label&gt;&lt;label&gt;峰值工况端到端 P95（毫秒）&lt;input id=&quot;p95&quot; type=&quot;number&quot; min=&quot;0.01&quot; step=&quot;any&quot; placeholder=&quot;未测试，保持空白&quot; value=&quot;&#x27;+state.p95+&#x27;&quot;&gt;&lt;/label&gt;&lt;label&gt;业务结果返回时限（毫秒）&lt;input id=&quot;budget&quot; type=&quot;number&quot; min=&quot;1&quot; value=&quot;&#x27;+state.budget+&#x27;&quot;&gt;&lt;/label&gt;&lt;/div&gt;&lt;div class=&quot;result&quot; aria-live=&quot;polite&quot;&gt;&lt;strong&gt;&#x27;+(!state.benchmark?&#x27;待实测，不能选型放行&#x27;:Number(state.benchmark)&lt;r?&#x27;实测吞吐低于需求&#x27;:&#x27;吞吐数字覆盖&#x27;+(state.mode===&#x27;trigger&#x27;?&#x27;平均&#x27;:&#x27;当前&#x27;)+&#x27;需求&#x27;)+&#x27;&lt;/strong&gt;&lt;div class=&quot;equation&quot;&gt;&#x27;+(state.benchmark?fmt(r)+&#x27; 次/秒需求 ÷ &#x27;+state.benchmark+&#x27; 次/秒实测吞吐 = &#x27;+fmt(r/Number(state.benchmark)*100)+&#x27;%（吞吐占比，不是 GPU 利用率）&#x27;:&#x27;把“猜这张卡够不够”变成“拿测试结果判断”。&#x27;)+&#x27;&lt;/div&gt;&lt;/div&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;th&gt;端到端 P95&lt;/th&gt;&lt;td&gt;&#x27;+(!state.p95?&#x27;待测&#x27;:Number(state.p95)&lt;=state.budget?&#x27;P95 数值满足时限；仍须检查超时率与 P99&#x27;:&#x27;超过业务时限，需要定位瓶颈&#x27;)+&#x27;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th&gt;峰值显存 / RAM&lt;/th&gt;&lt;td&gt;待测，不能从 GFLOPs 推算&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th&gt;多路同时触发&lt;/th&gt;&lt;td&gt;检查排队、丢帧与每箱结果是否及时返回&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th&gt;检测质量与长稳&lt;/th&gt;&lt;td&gt;漏判、误判、长时间运行、恢复能力均待验证&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;p class=&quot;note&quot;&gt;本章的交付是“需求 + 明确待测项”，不是购卡结论。下一章才讨论 CPU、显存、I/O、散热为什么会改变真实结果。&lt;/p&gt;&#x27;;}
+q(&#x27;#chapter-content&#x27;).innerHTML=html;q(&#x27;#chapter-prev&#x27;).disabled=state.step===0;q(&#x27;#chapter-next&#x27;).disabled=state.step===3;q(&#x27;#chapter-next&#x27;).textContent=state.step===3?&#x27;样章结束&#x27;:&#x27;下一步 →&#x27;;
+if(state.step===0){q(&#x27;#mode&#x27;).value=state.mode;bind(&#x27;mode&#x27;,&#x27;mode&#x27;,false);bind(&#x27;cams&#x27;,&#x27;cameras&#x27;);if(state.mode===&#x27;continuous&#x27;)bind(&#x27;fps&#x27;,&#x27;fps&#x27;);else{bind(&#x27;period&#x27;,&#x27;period&#x27;);bind(&#x27;frames&#x27;,&#x27;frames&#x27;)}}if(state.step===1){q(&#x27;#known&#x27;).value=state.known?&#x27;yes&#x27;:&#x27;no&#x27;;q(&#x27;#known&#x27;).onchange=e=&gt;{state.known=e.target.value===&#x27;yes&#x27;;render()};bind(&#x27;ops&#x27;,&#x27;ops&#x27;)}if(state.step===3){bind(&#x27;bench&#x27;,&#x27;benchmark&#x27;,false);bind(&#x27;p95&#x27;,&#x27;p95&#x27;,false);bind(&#x27;budget&#x27;,&#x27;budget&#x27;)}}
+root.querySelectorAll(&#x27;[data-step]&#x27;).forEach(b=&gt;b.onclick=()=&gt;{state.step=Number(b.dataset.step);render()});q(&#x27;#chapter-prev&#x27;).onclick=()=&gt;{state.step--;render()};q(&#x27;#chapter-next&#x27;).onclick=()=&gt;{state.step++;render()};render();})();
+&lt;/script&gt;
+&lt;/div&gt;
+
+&lt;/section&gt;
+&lt;section class=&quot;book-pane&quot; id=&quot;book-panel-1&quot; role=&quot;tabpanel&quot; aria-labelledby=&quot;book-tab-1&quot; hidden&gt;
+&lt;div id=&quot;hardware-chapter&quot;&gt;
+&lt;style&gt;
+#hardware-chapter{--paper:light-dark(#fff,#18251f);--ink:light-dark(#243b35,#e4eee7);--soft:light-dark(#f4f8f5,#213329);--edge:light-dark(#d7e3da,#435d4d);--green:light-dark(#207452,#83d6ac);--fill:light-dark(#308964,#589c76);--dim:light-dark(#607368,#b2c6b9);--call:light-dark(#eaf4ee,#284233);--warning:light-dark(#805b1d,#efd296);color:var(--ink);background:var(--paper);font-family:system-ui,&#x27;Microsoft YaHei&#x27;,sans-serif;border:1px solid var(--edge);border-radius:12px;overflow:hidden;color-scheme:light dark}#hardware-chapter *{box-sizing:border-box}#hardware-chapter header{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:20px 26px;border-bottom:1px solid var(--edge)}#hardware-chapter .brand{color:var(--green);font-weight:700}#hardware-chapter .meta{font-size:14px;color:var(--dim)}#hardware-chapter .layout{display:grid;grid-template-columns:196px minmax(0,1fr)}#hardware-chapter nav{background:var(--soft);padding:22px 14px;border-right:1px solid var(--edge)}#hardware-chapter button{font:inherit;cursor:pointer}#hardware-chapter nav button{display:block;width:100%;border:0;background:transparent;color:var(--dim);text-align:left;padding:12px 10px;border-radius:6px;margin-bottom:8px;font-size:14px}#hardware-chapter nav button[aria-current=step]{background:var(--call);color:var(--green);font-weight:700}#hardware-chapter main{padding:30px;min-width:0}#hardware-chapter .eyebrow{color:var(--green);font-size:14px}#hardware-chapter h2{font-size:26px;line-height:1.45;margin:10px 0 14px}#hardware-chapter p{font-size:16px;line-height:1.8;margin:14px 0}#hardware-chapter .small{font-size:14px;color:var(--dim);line-height:1.7}#hardware-chapter .fields{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:22px 0}#hardware-chapter label{font-size:14px;line-height:1.7;display:block}#hardware-chapter input,#hardware-chapter select{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);width:100%;padding:10px;margin-top:6px;border:1px solid var(--edge);border-radius:6px}#hardware-chapter input[type=range]{padding:0;accent-color:var(--green)}#hardware-chapter .statement{padding:18px 20px;background:var(--call);border-left:3px solid var(--green);margin-top:20px;font-size:16px;line-height:1.75}#hardware-chapter .statement strong{font-size:22px;display:block}#hardware-chapter .chain{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 0}#hardware-chapter .chain div{background:var(--soft);padding:14px;border-radius:6px;font-size:14px;line-height:1.8}#hardware-chapter .chain b{display:block;color:var(--green);font-size:18px}#hardware-chapter .plot{margin:22px 0;padding:20px 0;border-top:1px solid var(--edge);border-bottom:1px solid var(--edge)}#hardware-chapter .row{display:grid;grid-template-columns:78px minmax(0,1fr) 92px;gap:10px;align-items:center;margin:18px 0;font-size:14px}#hardware-chapter .track{height:25px;background:var(--soft);position:relative}#hardware-chapter .bar{height:100%;background:var(--fill)}#hardware-chapter .target{position:absolute;height:37px;border-left:2px solid var(--ink);top:-6px}#hardware-chapter .legend{font-size:14px;color:var(--dim);line-height:1.7}#hardware-chapter .foot{display:flex;justify-content:space-between;gap:12px;margin-top:26px}#hardware-chapter .foot button{padding:10px 16px;border:1px solid var(--edge);border-radius:6px;color:var(--green);background:var(--paper)}#hardware-chapter .foot button.primary{background:var(--call)}#hardware-chapter button:disabled{opacity:.4;cursor:default}#hardware-chapter table{border-collapse:collapse;width:100%;font-size:14px;line-height:1.65}#hardware-chapter th,#hardware-chapter td{padding:10px 7px;text-align:left;border-bottom:1px solid var(--edge);overflow-wrap:anywhere}#hardware-chapter .wrap{overflow:auto}#hardware-chapter .memory{display:flex;height:42px;background:var(--soft);margin:16px 0;overflow:hidden}#hardware-chapter .memory span{height:100%;background:var(--fill);border-right:2px solid var(--paper)}#hardware-chapter .warn{color:var(--warning)}#hardware-chapter :focus-visible{outline:3px solid var(--green);outline-offset:3px}@media(max-width:700px){#hardware-chapter .layout{display:block}#hardware-chapter nav{display:flex;flex-wrap:wrap;gap:4px;padding:12px;border-right:0}#hardware-chapter nav button{width:auto;flex:1 1 42%;margin:0}#hardware-chapter main{padding:22px}#hardware-chapter .fields,#hardware-chapter .chain{grid-template-columns:1fr}#hardware-chapter h2{font-size:23px}#hardware-chapter .row{grid-template-columns:62px minmax(0,1fr) 72px;gap:6px}}
+&lt;/style&gt;
+&lt;header&gt;&lt;span class=&quot;brand&quot;&gt;算力图解书 / 第二章 · 从需求到候选 IPC&lt;/span&gt;&lt;span class=&quot;meta&quot;&gt;包装漏装案例 · 全部性能数字为教学假设&lt;/span&gt;&lt;/header&gt;
+&lt;div class=&quot;layout&quot;&gt;&lt;nav aria-label=&quot;第二章阅读步骤&quot;&gt;&lt;button data-step=&quot;0&quot; aria-current=&quot;step&quot;&gt;01　先把需求带过来&lt;/button&gt;&lt;button data-step=&quot;1&quot;&gt;02　不是比宣传算力&lt;/button&gt;&lt;button data-step=&quot;2&quot;&gt;03　够快，还要装得下&lt;/button&gt;&lt;button data-step=&quot;3&quot;&gt;04　为什么仍不能放行&lt;/button&gt;&lt;/nav&gt;&lt;main&gt;&lt;div id=&quot;hw-stage&quot; class=&quot;eyebrow&quot;&gt;&lt;/div&gt;&lt;h2 id=&quot;hw-title&quot;&gt;&lt;/h2&gt;&lt;div id=&quot;hw-content&quot;&gt;&lt;/div&gt;&lt;div class=&quot;foot&quot;&gt;&lt;button id=&quot;hw-prev&quot;&gt;← 上一步&lt;/button&gt;&lt;button id=&quot;hw-next&quot; class=&quot;primary&quot;&gt;下一步 →&lt;/button&gt;&lt;/div&gt;&lt;/main&gt;&lt;/div&gt;
+&lt;script&gt;
+(function(){const root=document.getElementById(&#x27;hardware-chapter&#x27;),q=s=&gt;root.querySelector(s);const s={step:0,lines:1,fps:2,reserve:25,source:&#x27;demo&#x27;,chosen:&#x27;B&#x27;,workers:1,memory:3,capacity:8,latency:300};const names=[&#x27;先别选型号，把“要完成的工作”写下来&#x27;,&#x27;TFLOP/s 不是显卡型号：中间还差实测&#x27;,&#x27;速度够了，模型一定装得下吗？&#x27;,&#x27;三道筛选，不等于生产放行&#x27;];const speeds={A:3,B:10,C:25},p95={A:420,B:180,C:100};function rate(){return s.lines*s.fps}function goal(){return rate()/(1-s.reserve/100)}function f(n){return Number(n.toFixed(2)).toString()}function set(id,key,num){q(&#x27;#&#x27;+id).onchange=e=&gt;{if(!e.target.checkValidity()||(num&amp;&amp;e.target.value===&#x27;&#x27;)){e.target.reportValidity();render();return}s[key]=num?Number(e.target.value):e.target.value;render()}}function render(){q(&#x27;#hw-title&#x27;).textContent=names[s.step];q(&#x27;#hw-stage&#x27;).textContent=&#x27;第二章 / &#x27;+(s.step+1)+&#x27; · 共 4 步&#x27;;root.querySelectorAll(&#x27;[data-step]&#x27;).forEach(b=&gt;b.setAttribute(&#x27;aria-current&#x27;,Number(b.dataset.step)===s.step?&#x27;step&#x27;:&#x27;false&#x27;));const r=rate(),g=goal();let html=&#x27;&#x27;;
+if(s.step===0){html=&#x27;&lt;p&gt;继续第一章的&lt;b&gt;持续视觉观察&lt;/b&gt;分支：每路每秒选 2 张图送入包装检测模型。这里重新提供参数，不会自动读取你在上一章的修改。&lt;/p&gt;&lt;div class=&quot;fields&quot;&gt;&lt;label&gt;部署相机数量：&#x27;+s.lines+&#x27; 路&lt;input id=&quot;lines&quot; type=&quot;range&quot; min=&quot;1&quot; max=&quot;12&quot; value=&quot;&#x27;+s.lines+&#x27;&quot;&gt;&lt;/label&gt;&lt;label&gt;每路推理频率（次/秒）&lt;input id=&quot;fps&quot; type=&quot;number&quot; min=&quot;1&quot; max=&quot;30&quot; value=&quot;&#x27;+s.fps+&#x27;&quot;&gt;&lt;/label&gt;&lt;label&gt;留出多少实测吞吐容量？&lt;select id=&quot;reserve&quot;&gt;&lt;option value=&quot;0&quot;&gt;0% · 不留容量&lt;/option&gt;&lt;option value=&quot;25&quot;&gt;25% · 教学假设&lt;/option&gt;&lt;option value=&quot;40&quot;&gt;40% · 教学假设&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;&lt;/div&gt;&lt;div class=&quot;chain&quot;&gt;&lt;div&gt;业务任务量&lt;b&gt;&#x27;+f(r)+&#x27; 次/秒&lt;/b&gt;&#x27;+s.lines+&#x27; 路 × &#x27;+s.fps+&#x27; 次/秒&lt;/div&gt;&lt;div&gt;示例单次计算量&lt;b&gt;20 GFLOPs/次&lt;/b&gt;固定输入与模型&lt;/div&gt;&lt;div&gt;模型运算需求&lt;b&gt;&#x27;+f(20*r/1000)+&#x27; TFLOP/s&lt;/b&gt;不包含整机其他工作&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;statement&quot; aria-live=&quot;polite&quot;&gt;&lt;strong&gt;候选 IPC 需实测达到 &#x27;+f(g)+&#x27; 次/秒&lt;/strong&gt;&#x27;+f(r)+&#x27; ÷ (1 − &#x27;+s.reserve+&#x27;%) = &#x27;+f(g)+&#x27; 次/秒&lt;/div&gt;&lt;p class=&quot;small&quot;&gt;这里的余量是“保留实测吞吐容量”，不是 GPU 利用率。保留 25% 容量要除以 0.75，不等于简单乘 1.25。参数应由峰值、扩展计划和风险共同决定。&lt;/p&gt;&#x27;;}
+else if(s.step===1){const scale=Math.max(30,g*1.1);html=&#x27;&lt;p&gt;把同一模型、输入尺寸、精度、Batch、Worker 配置放到候选整机上。比较的是&lt;b&gt;完整服务可持续处理多少任务&lt;/b&gt;，不是厂商峰值 TOPS。A/B/C 只是虚构候选，没有对应任何 GPU 型号。&lt;/p&gt;&lt;div class=&quot;fields&quot;&gt;&lt;label&gt;测试结果来源&lt;select id=&quot;source&quot;&gt;&lt;option value=&quot;demo&quot;&gt;看教学假设，理解比较逻辑&lt;/option&gt;&lt;option value=&quot;unknown&quot;&gt;真实设备未测试，保持待测&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;&lt;label&gt;当前重点观察的候选&lt;select id=&quot;chosen&quot;&gt;&lt;option value=&quot;A&quot;&gt;候选 A&lt;/option&gt;&lt;option value=&quot;B&quot;&gt;候选 B&lt;/option&gt;&lt;option value=&quot;C&quot;&gt;候选 C&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;&lt;/div&gt;&#x27;+(s.source===&#x27;demo&#x27;?&#x27;&lt;div class=&quot;plot&quot; role=&quot;img&quot; aria-label=&quot;候选可持续吞吐对比，竖线代表包含余量的需求&quot;&gt;&lt;div class=&quot;legend&quot;&gt;条长＝教学吞吐；竖线＝含余量目标 &#x27;+f(g)+&#x27; 次/秒；横向范围 0–&#x27;+f(scale)+&#x27; 次/秒&lt;/div&gt;&#x27;+Object.entries(speeds).map(([k,v])=&gt;&#x27;&lt;div class=&quot;row&quot;&gt;&lt;span&gt;候选 &#x27;+k+&#x27;&lt;/span&gt;&lt;div class=&quot;track&quot;&gt;&lt;div class=&quot;bar&quot; style=&quot;width:&#x27;+v/scale*100+&#x27;%&quot;&gt;&lt;/div&gt;&lt;i class=&quot;target&quot; style=&quot;left:&#x27;+g/scale*100+&#x27;%&quot;&gt;&lt;/i&gt;&lt;/div&gt;&lt;span&gt;&#x27;+v+&#x27; 次/秒&lt;/span&gt;&lt;/div&gt;&#x27;).join(&#x27;&#x27;)+&#x27;&lt;/div&gt;&lt;div class=&quot;statement&quot; aria-live=&quot;polite&quot;&gt;&lt;strong&gt;候选 &#x27;+s.chosen+&#x27;：&#x27;+(speeds[s.chosen]&gt;=g?&#x27;吞吐初筛通过&#x27;:&#x27;吞吐不足&#x27;)+&#x27;&lt;/strong&gt;业务需求 / 候选吞吐 = &#x27;+f(r/speeds[s.chosen]*100)+&#x27;%。&#x27;+(speeds[s.chosen]&gt;=g?&#x27;尚不能推断显存、时延和生产稳定性。&#x27;:&#x27;不应只靠增加 Worker 假设能够补足。&#x27;)+&#x27;&lt;/div&gt;&#x27;:&#x27;&lt;div class=&quot;statement&quot;&gt;&lt;strong&gt;真实匹配结论：待测&lt;/strong&gt;缺少 Benchmark，就没有可信的 A/B/C 排名。&lt;/div&gt;&#x27;)+&#x27;&lt;p class=&quot;small&quot;&gt;实测记录必须带上模型文件、输入尺寸、精度、框架、驱动、CPU/GPU、Worker、相机流和测试时长。只测 GPU 内核的 FPS 不能当完整服务吞吐；丢弃请求获得的高 FPS 也不能证明全部任务得到处理。&lt;/p&gt;&#x27;;}
+else if(s.step===2){const total=s.memory*s.workers,ratio=Math.min(100,total/s.capacity*100);html=&#x27;&lt;p&gt;算力决定“算得快不快”，显存还要检查“装得下装不下”。不能从 20 GFLOPs 推算显存。下面演示&lt;b&gt;独立进程各自加载模型副本&lt;/b&gt;时，显存预算如何累加。&lt;/p&gt;&lt;div class=&quot;fields&quot;&gt;&lt;label&gt;GPU 可用显存预算（GiB）&lt;input id=&quot;capacity&quot; type=&quot;number&quot; min=&quot;1&quot; max=&quot;128&quot; value=&quot;&#x27;+s.capacity+&#x27;&quot;&gt;&lt;/label&gt;&lt;label&gt;每进程显存预算（GiB）&lt;input id=&quot;memory&quot; type=&quot;number&quot; min=&quot;0.1&quot; step=&quot;0.1&quot; max=&quot;64&quot; value=&quot;&#x27;+s.memory+&#x27;&quot;&gt;&lt;/label&gt;&lt;label&gt;独立模型进程：&#x27;+s.workers+&#x27; 个&lt;input id=&quot;workers&quot; type=&quot;range&quot; min=&quot;1&quot; max=&quot;6&quot; value=&quot;&#x27;+s.workers+&#x27;&quot;&gt;&lt;/label&gt;&lt;/div&gt;&lt;div class=&quot;plot&quot;&gt;&lt;div class=&quot;legend&quot;&gt;&#x27;+f(total)+&#x27; GiB 进程预算 / &#x27;+s.capacity+&#x27; GiB 可用预算&lt;/div&gt;&lt;div class=&quot;memory&quot; role=&quot;img&quot; aria-label=&quot;进程显存预算占用&quot;&gt;&lt;div style=&quot;display:flex;width:&#x27;+ratio+&#x27;%&quot;&gt;&#x27;+Array.from({length:s.workers},()=&gt;&#x27;&lt;span style=&quot;flex:1&quot;&gt;&lt;/span&gt;&#x27;).join(&#x27;&#x27;)+&#x27;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;legend&quot;&gt;每段代表一份独立进程预算，剩余浅色为预算内的空闲空间。&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;statement&quot; aria-live=&quot;polite&quot;&gt;&lt;strong&gt;&#x27;+(total&gt;s.capacity?&#x27;预算超出 &#x27;+f(total-s.capacity)+&#x27; GiB&#x27;:total===s.capacity?&#x27;预算恰好用完，没有剩余空间&#x27;:&#x27;预算内还剩 &#x27;+f(s.capacity-total)+&#x27; GiB&#x27;)+&#x27;&lt;/strong&gt;&#x27;+s.workers+&#x27; 个进程 × &#x27;+s.memory+&#x27; GiB = &#x27;+f(total)+&#x27; GiB。&#x27;+(s.workers&gt;1?&#x27;进程翻倍不等于吞吐翻倍。&#x27;:&#x27;先从单进程建立基线。&#x27;)+&#x27;&lt;/div&gt;&lt;p class=&quot;small&quot;&gt;全部数值均为教学预算。可用预算应先扣除系统、其他服务和必要余量；每进程预算应覆盖权重、激活、工作区、上下文及缓存。预算相加只是预检，最终必须测多进程并发峰值。如果共享模型或使用模型服务，不能照搬这个副本假设。调整 Worker 后，上一页吞吐结果也需要重新测。&lt;/p&gt;&#x27;;}
+else{const valid=s.source===&#x27;demo&#x27;&amp;&amp;s.workers===1&amp;&amp;s.memory===3&amp;&amp;s.capacity===8;html=&#x27;&lt;p&gt;把证据放在一起看。下列时延假设来自&lt;b&gt;与吞吐测试相同的混合负载&lt;/b&gt;；改变进程或硬件条件后，不能继续沿用旧结果。&lt;/p&gt;&lt;div class=&quot;fields&quot;&gt;&lt;label&gt;业务结果返回时限（毫秒）&lt;input id=&quot;latency&quot; type=&quot;number&quot; min=&quot;1&quot; max=&quot;10000&quot; value=&quot;&#x27;+s.latency+&#x27;&quot;&gt;&lt;/label&gt;&lt;label&gt;候选配置&lt;select id=&quot;chosen&quot;&gt;&lt;option value=&quot;A&quot;&gt;候选 A&lt;/option&gt;&lt;option value=&quot;B&quot;&gt;候选 B&lt;/option&gt;&lt;option value=&quot;C&quot;&gt;候选 C&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;&lt;/div&gt;&lt;div class=&quot;wrap&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;筛选项&lt;/th&gt;&lt;th&gt;需求 / 假设证据&lt;/th&gt;&lt;th&gt;当前判断&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;持续吞吐&lt;/td&gt;&lt;td&gt;目标 &#x27;+f(g)+&#x27; 次/秒；&#x27;+(valid?&#x27;示例 &#x27;+speeds[s.chosen]+&#x27; 次/秒&#x27;:&#x27;当前配置尚无结果&#x27;)+&#x27;&lt;/td&gt;&lt;td&gt;&#x27;+(valid?(speeds[s.chosen]&gt;=g?&#x27;初筛通过&#x27;:&#x27;不足&#x27;):&#x27;待测&#x27;)+&#x27;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;显存预算&lt;/td&gt;&lt;td&gt;&#x27;+f(s.memory*s.workers)+&#x27; / &#x27;+s.capacity+&#x27; GiB&lt;/td&gt;&lt;td&gt;&#x27;+(s.memory*s.workers&lt;s.capacity?&#x27;预算内，峰值待测&#x27;:&#x27;无余量或已超出&#x27;)+&#x27;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;端到端 P95&lt;/td&gt;&lt;td&gt;时限 &#x27;+s.latency+&#x27; ms；&#x27;+(valid?&#x27;示例 &#x27;+p95[s.chosen]+&#x27; ms&#x27;:&#x27;当前配置尚无结果&#x27;)+&#x27;&lt;/td&gt;&lt;td&gt;&#x27;+(valid?(p95[s.chosen]&lt;=s.latency?&#x27;数值满足&#x27;:&#x27;超时&#x27;):&#x27;待测&#x27;)+&#x27;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;检测质量&lt;/td&gt;&lt;td&gt;漏检 / 误报 / 遮挡与换型&lt;/td&gt;&lt;td&gt;待验证&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;现场运行&lt;/td&gt;&lt;td&gt;多路峰值 / 温度 / 恢复 / 长稳&lt;/td&gt;&lt;td&gt;待验证&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;&lt;div class=&quot;statement&quot; aria-live=&quot;polite&quot;&gt;&lt;strong&gt;结论：只能筛出“值得实机验证”的候选&lt;/strong&gt;&#x27;+(valid&amp;&amp;speeds[s.chosen]&gt;=g&amp;&amp;p95[s.chosen]&lt;=s.latency?&#x27;候选 &#x27;+s.chosen+&#x27; 的教学吞吐、时延初筛通过，但还没有真实上线证据。&#x27;:&#x27;补齐或重测当前配置的证据，再进入下一步。&#x27;)+&#x27;&lt;/div&gt;&lt;p class=&quot;small&quot;&gt;P95 满足时限，不代表每个请求都不超时；还要检查 P99、超时率及最差工况。例：候选 A 的 3 次/秒可能覆盖单路需求，但示例 P95 为 420 ms，仍会超过 300 ms 的业务时限。&lt;/p&gt;&#x27;;}
+q(&#x27;#hw-content&#x27;).innerHTML=html;q(&#x27;#hw-prev&#x27;).disabled=s.step===0;q(&#x27;#hw-next&#x27;).disabled=s.step===3;q(&#x27;#hw-next&#x27;).textContent=s.step===3?&#x27;本章结束&#x27;:&#x27;下一步 →&#x27;;if(s.step===0){q(&#x27;#reserve&#x27;).value=s.reserve;set(&#x27;lines&#x27;,&#x27;lines&#x27;,true);set(&#x27;fps&#x27;,&#x27;fps&#x27;,true);set(&#x27;reserve&#x27;,&#x27;reserve&#x27;,true)}if(s.step===1){q(&#x27;#source&#x27;).value=s.source;q(&#x27;#chosen&#x27;).value=s.chosen;set(&#x27;source&#x27;,&#x27;source&#x27;);set(&#x27;chosen&#x27;,&#x27;chosen&#x27;)}if(s.step===2){set(&#x27;capacity&#x27;,&#x27;capacity&#x27;,true);set(&#x27;memory&#x27;,&#x27;memory&#x27;,true);set(&#x27;workers&#x27;,&#x27;workers&#x27;,true)}if(s.step===3){q(&#x27;#chosen&#x27;).value=s.chosen;set(&#x27;chosen&#x27;,&#x27;chosen&#x27;);set(&#x27;latency&#x27;,&#x27;latency&#x27;,true)}}root.querySelectorAll(&#x27;[data-step]&#x27;).forEach(b=&gt;b.onclick=()=&gt;{s.step=Number(b.dataset.step);render()});q(&#x27;#hw-prev&#x27;).onclick=()=&gt;{s.step--;render()};q(&#x27;#hw-next&#x27;).onclick=()=&gt;{s.step++;render()};render()})();
+&lt;/script&gt;
+&lt;/div&gt;
+
+&lt;/section&gt;
+&lt;section class=&quot;book-pane&quot; id=&quot;book-panel-2&quot; role=&quot;tabpanel&quot; aria-labelledby=&quot;book-tab-2&quot; hidden&gt;
+&lt;div id=&quot;ipc-chapter&quot;&gt;
+&lt;style&gt;
+#ipc-chapter{--paper:light-dark(#fff,#18251f);--ink:light-dark(#243b35,#e4eee7);--soft:light-dark(#f4f8f5,#213329);--edge:light-dark(#d7e3da,#435d4d);--green:light-dark(#207452,#83d6ac);--fill:light-dark(#308964,#589c76);--dim:light-dark(#607368,#b2c6b9);--call:light-dark(#eaf4ee,#284233);--warn:light-dark(#805b1d,#efd296);color:var(--ink);background:var(--paper);font-family:system-ui,&#x27;Microsoft YaHei&#x27;,sans-serif;border:1px solid var(--edge);border-radius:12px;overflow:hidden;color-scheme:light dark}#ipc-chapter *{box-sizing:border-box}#ipc-chapter header{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:20px 26px;border-bottom:1px solid var(--edge)}#ipc-chapter .brand{color:var(--green);font-weight:700}#ipc-chapter .meta{font-size:14px;color:var(--dim)}#ipc-chapter .layout{display:grid;grid-template-columns:196px minmax(0,1fr)}#ipc-chapter nav{background:var(--soft);padding:22px 14px;border-right:1px solid var(--edge)}#ipc-chapter button{font:inherit;cursor:pointer}#ipc-chapter nav button{display:block;width:100%;border:0;background:transparent;color:var(--dim);text-align:left;padding:12px 10px;border-radius:6px;margin-bottom:8px;font-size:14px}#ipc-chapter nav button[aria-current=step]{background:var(--call);color:var(--green);font-weight:700}#ipc-chapter main{padding:30px;min-width:0}#ipc-chapter .eyebrow{color:var(--green);font-size:14px}#ipc-chapter h2{font-size:26px;line-height:1.45;margin:10px 0 14px}#ipc-chapter p{font-size:16px;line-height:1.8;margin:14px 0}#ipc-chapter .small{font-size:14px;color:var(--dim);line-height:1.7}#ipc-chapter .fields{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:22px 0}#ipc-chapter label{font-size:14px;line-height:1.7;display:block}#ipc-chapter input,#ipc-chapter select{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);width:100%;padding:10px;margin-top:6px;border:1px solid var(--edge);border-radius:6px}#ipc-chapter input[type=range]{padding:0;accent-color:var(--green)}#ipc-chapter .statement{padding:18px 20px;background:var(--call);border-left:3px solid var(--green);margin-top:20px;font-size:16px;line-height:1.75}#ipc-chapter .statement strong{font-size:22px;display:block}#ipc-chapter .map{padding:18px 0;margin:22px 0;border-top:1px solid var(--edge);border-bottom:1px solid var(--edge)}#ipc-chapter .node-row{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap;margin:10px 0}#ipc-chapter .node-row button{flex:1 1 120px;padding:12px;border:1px solid var(--edge);border-radius:7px;background:var(--paper);color:var(--ink);text-align:left;font-size:14px;line-height:1.75}#ipc-chapter .node-row button b{display:block;color:var(--green);font-size:17px}#ipc-chapter .node-row button[aria-pressed=true]{background:var(--call);border-color:var(--green)}#ipc-chapter .link{text-align:center;color:var(--dim);font-size:14px;margin:7px 0}#ipc-chapter .resources{padding:14px;border:1px solid var(--edge);border-radius:8px}#ipc-chapter .foot{display:flex;justify-content:space-between;gap:12px;margin-top:26px}#ipc-chapter .foot button{padding:10px 16px;border:1px solid var(--edge);border-radius:6px;color:var(--green);background:var(--paper)}#ipc-chapter .foot button.primary{background:var(--call)}#ipc-chapter button:disabled{opacity:.4;cursor:default}#ipc-chapter table{border-collapse:collapse;width:100%;font-size:14px;line-height:1.65}#ipc-chapter th,#ipc-chapter td{padding:10px 7px;text-align:left;border-bottom:1px solid var(--edge);overflow-wrap:anywhere}#ipc-chapter .wrap{overflow:auto}#ipc-chapter .strip{height:30px;display:flex;background:var(--soft);margin:8px 0}#ipc-chapter .strip i{display:block;height:100%;border-right:2px solid var(--paper);background:var(--fill)}#ipc-chapter .strip i.cpu{background:light-dark(#698faa,#779aac)}#ipc-chapter .strip i.io{background:light-dark(#b09b79,#aa967b)}#ipc-chapter .strip i.misc{background:light-dark(#a9b7af,#657b6e)}#ipc-chapter .section-label{font-size:14px;color:var(--dim);margin-top:18px}#ipc-chapter .queue{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}#ipc-chapter .ticket{min-width:28px;padding:5px;background:var(--soft);border:1px solid var(--edge);text-align:center;font-size:14px}#ipc-chapter .warning{color:var(--warn)}#ipc-chapter :focus-visible{outline:3px solid var(--green);outline-offset:3px}#ipc-chapter a{color:var(--green);text-decoration:underline}@media(max-width:700px){#ipc-chapter .layout{display:block}#ipc-chapter nav{display:flex;flex-wrap:wrap;gap:4px;padding:12px;border-right:0}#ipc-chapter nav button{width:auto;flex:1 1 42%;margin:0}#ipc-chapter main{padding:22px}#ipc-chapter .fields{grid-template-columns:1fr}#ipc-chapter h2{font-size:23px}}
+&lt;/style&gt;
+&lt;header&gt;&lt;span class=&quot;brand&quot;&gt;算力图解书 / 第三章 · 跟着一张图片走过 IPC&lt;/span&gt;&lt;span class=&quot;meta&quot;&gt;包装漏装案例 · 时延、队列均为教学模型&lt;/span&gt;&lt;/header&gt;
+&lt;div class=&quot;layout&quot;&gt;&lt;nav aria-label=&quot;第三章步骤&quot;&gt;&lt;button data-step=&quot;0&quot; aria-current=&quot;step&quot;&gt;01　拆开 IPC 看分工&lt;/button&gt;&lt;button data-step=&quot;1&quot;&gt;02　显卡快一倍，整机呢&lt;/button&gt;&lt;button data-step=&quot;2&quot;&gt;03　为什么越跑越慢&lt;/button&gt;&lt;button data-step=&quot;3&quot;&gt;04　下一台 IPC 怎么配&lt;/button&gt;&lt;/nav&gt;&lt;main&gt;&lt;div id=&quot;ipc-stage&quot; class=&quot;eyebrow&quot;&gt;&lt;/div&gt;&lt;h2 id=&quot;ipc-title&quot;&gt;&lt;/h2&gt;&lt;div id=&quot;ipc-content&quot;&gt;&lt;/div&gt;&lt;div class=&quot;foot&quot;&gt;&lt;button id=&quot;ipc-prev&quot;&gt;← 上一步&lt;/button&gt;&lt;button id=&quot;ipc-next&quot; class=&quot;primary&quot;&gt;下一步 →&lt;/button&gt;&lt;/div&gt;&lt;/main&gt;&lt;/div&gt;
+&lt;script&gt;
+(function(){const root=document.getElementById(&#x27;ipc-chapter&#x27;),q=s=&gt;root.querySelector(s);const s={step:0,part:&#x27;cpu&#x27;,upgrade:&#x27;none&#x27;,cams:1,fps:2,policy:&#x27;all&#x27;,need:&#x27;camera&#x27;};const titles=[&#x27;图片不是只经过 GPU：谁在搬运，谁在计算？&#x27;,&#x27;GPU 只花了 25 ms，为什么结果却要 200 ms？&#x27;,&#x27;单帧跑得通，为什么多路一来就积压？&#x27;,&#x27;把“哪个零件好”改成“我要验证什么能力”&#x27;];
+const parts={camera:[&#x27;相机 / 接口&#x27;,&#x27;把现场变成图像并送进 IPC。网口、USB 或采集卡属于传输入口；外部相机本身不是 IPC 内部部件。&#x27;,&#x27;看触发、曝光、帧时间戳、接收带宽和丢帧。Python/C++ 影响 SDK 接入，不能替代物理接口与带宽判断。&#x27;],cpu:[&#x27;CPU&#x27;,&#x27;运行采集调度、解码、缩放、规则判断和通讯。本图采用 CPU 预处理；实际部署也可能交给专用解码器或 GPU。&#x27;,&#x27;看分段耗时、忙碌线程和能否持续供帧。总 CPU 占用低，不代表某一个关键线程不满。&#x27;],ram:[&#x27;RAM · 系统内存&#x27;,&#x27;保存收到的帧、队列和程序数据。CPU 在这里组织工作；它不是“图片必须走过的一个独立计算站”。&#x27;,&#x27;看进程峰值、队列数量和内存随时间的趋势。增加 RAM 可以容纳更多排队帧，但不会自动缩短服务时间。&#x27;],gpu:[&#x27;GPU + 显存&#x27;,&#x27;GPU 执行模型计算；显存承载模型权重、输入和临时工作区。CPU↔GPU 的传输或共享内存方式取决于平台。&#x27;,&#x27;分别看计算时间、数据搬运时间、峰值显存。显存容量与算力是两项指标，系统 RAM 不能当作专用显存相加。&#x27;],ssd:[&#x27;SSD / 留痕&#x27;,&#x27;保存系统、模型、日志及留痕图片。模型载入后，不一定每帧都重新从磁盘读权重。&#x27;,&#x27;看持续写入、保存策略、容量与保留天数。同步写图可能阻塞返回；异步保存仍需限队列并处理失败。&#x27;],result:[&#x27;结果接口 / 人工通知&#x27;,&#x27;结果交给 UI、人工通知或业务系统。此包装漏装示例只展示通知与留痕；其他场景可能另接 PLC/MES。&#x27;,&#x27;明确“结果完成”是算法算完、界面出现、通知送达还是外部设备确认，时间戳口径必须一致。&#x27;],board:[&#x27;主板 / PCIe / 扩展&#x27;,&#x27;连接 CPU、内存、显卡、网卡和存储。它决定能不能插上、能否共享足够的数据通道。&#x27;,&#x27;核对物理尺寸、插槽、PCIe 通道、扩展卡和机箱空间，而非只看“有几个接口”。&#x27;],power:[&#x27;电源 / 散热 / 机箱&#x27;,&#x27;支撑整机持续运行，不直接增加每帧运算。供电、热量和现场环境是独立的适用性约束。&#x27;,&#x27;核对厂商功率、接口、环境温度、风道、防尘及维护条件；查看负载下温度与频率，不凭额定算力推断长稳。&#x27;]};
+function set(id,key,num){q(&#x27;#&#x27;+id).onchange=e=&gt;{if(!e.target.checkValidity()||(num&amp;&amp;e.target.value===&#x27;&#x27;)){e.target.reportValidity();return}s[key]=num?Number(e.target.value):e.target.value;render()}}
+function durations(){return [20,s.upgrade===&#x27;cpu&#x27;?40:80,20,s.upgrade===&#x27;gpu&#x27;?12.5:25,15,40]}
+function total(){return durations().reduce((a,b)=&gt;a+b,0)}
+function node(id,small){return &#x27;&lt;button data-part=&quot;&#x27;+id+&#x27;&quot; aria-pressed=&quot;&#x27;+(s.part===id)+&#x27;&quot;&gt;&lt;b&gt;&#x27;+parts[id][0]+&#x27;&lt;/b&gt;&#x27;+small+&#x27;&lt;/button&gt;&#x27;}
+function bars(values){return &#x27;&lt;div class=&quot;strip&quot; role=&quot;img&quot; aria-label=&quot;固定 0 到 200 毫秒刻度的串行阶段时延&quot;&gt;&#x27;+values.map((v,i)=&gt;&#x27;&lt;i class=&quot;&#x27;+([&#x27;io&#x27;,&#x27;cpu&#x27;,&#x27;misc&#x27;,&#x27;&#x27;,&#x27;cpu&#x27;,&#x27;io&#x27;][i])+&#x27;&quot; style=&quot;width:&#x27;+v/200*100+&#x27;%&quot;&gt;&lt;/i&gt;&#x27;).join(&#x27;&#x27;)+&#x27;&lt;/div&gt;&#x27;}
+function simulate(){const interval=1000/(s.cams*s.fps),service=total(),arrivals=Array.from({length:Math.round(s.cams*s.fps*10)},(_,i)=&gt;({id:i+1,t:i*interval}));let current=null,pending=[],finish=Infinity,completed=0,dropped=0,lastAge=0;function start(job,now){current=job;finish=now+service}for(const a of arrivals){while(current&amp;&amp;finish&lt;=a.t+1e-7){const now=finish;completed++;lastAge=now-current.t;current=null;finish=Infinity;if(pending.length)start(pending.shift(),now)}if(!current)start(a,a.t);else if(s.policy===&#x27;latest&#x27;){dropped+=pending.length;pending=[a]}else pending.push(a)}while(current&amp;&amp;finish&lt;=10000+1e-7){const now=finish;completed++;lastAge=now-current.t;current=null;finish=Infinity;if(pending.length)start(pending.shift(),now)}return {arrivals:arrivals.length,completed,dropped,current,pending,lastAge}}
+function render(){q(&#x27;#ipc-title&#x27;).textContent=titles[s.step];q(&#x27;#ipc-stage&#x27;).textContent=&#x27;第三章 / &#x27;+(s.step+1)+&#x27; · 共 4 步&#x27;;root.querySelectorAll(&#x27;[data-step]&#x27;).forEach(b=&gt;b.setAttribute(&#x27;aria-current&#x27;,Number(b.dataset.step)===s.step?&#x27;step&#x27;:&#x27;false&#x27;));let html=&#x27;&#x27;;
+if(s.step===0){html=&#x27;&lt;p&gt;延续包装漏装案例：图片送入模型，检测结果用于通知和留痕。点选部件，查看它做什么、该拿什么证据判断是否够用。&lt;/p&gt;&lt;div class=&quot;map&quot;&gt;&lt;div class=&quot;node-row&quot;&gt;&#x27;+node(&#x27;camera&#x27;,&#x27;图像进入&#x27;)+&#x27;&lt;/div&gt;&lt;div class=&quot;link&quot;&gt;↓ 接收图像 / 形成缓冲&lt;/div&gt;&lt;div class=&quot;resources&quot;&gt;&lt;div class=&quot;small&quot;&gt;IPC 内部 · 简化功能关系，不是物理接线图&lt;/div&gt;&lt;div class=&quot;node-row&quot;&gt;&#x27;+node(&#x27;cpu&#x27;,&#x27;调度与处理&#x27;)+node(&#x27;ram&#x27;,&#x27;帧缓存与队列&#x27;)+&#x27;&lt;/div&gt;&lt;div class=&quot;link&quot;&gt;CPU ↔ RAM　｜　CPU / RAM ↔ GPU：调度与数据交换&lt;/div&gt;&lt;div class=&quot;node-row&quot;&gt;&#x27;+node(&#x27;gpu&#x27;,&#x27;模型计算与工作区&#x27;)+&#x27;&lt;/div&gt;&lt;div class=&quot;link&quot;&gt;CPU 汇总结果后分别通知、保存&lt;/div&gt;&lt;div class=&quot;node-row&quot;&gt;&#x27;+node(&#x27;result&#x27;,&#x27;输出分支&#x27;)+node(&#x27;ssd&#x27;,&#x27;存储分支&#x27;)+&#x27;&lt;/div&gt;&lt;div class=&quot;node-row&quot;&gt;&#x27;+node(&#x27;board&#x27;,&#x27;连接整机部件&#x27;)+node(&#x27;power&#x27;,&#x27;支撑整机运行&#x27;)+&#x27;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;statement&quot; aria-live=&quot;polite&quot;&gt;&lt;strong&gt;&#x27;+parts[s.part][0]+&#x27;&lt;/strong&gt;&#x27;+parts[s.part][1]+&#x27;&lt;/div&gt;&lt;p class=&quot;small&quot;&gt;怎么判断：&#x27;+parts[s.part][2]+&#x27;&lt;/p&gt;&#x27;;}
+else if(s.step===1){const ds=durations(),t=total();html=&#x27;&lt;p&gt;先用一个最简单的程序理解：一次只处理一张图，各阶段串行执行，且必须保存完图片才返回结果。基线单帧总耗时是 200 ms；下面改变一段，其他阶段保持不变。&lt;/p&gt;&lt;div class=&quot;fields&quot;&gt;&lt;label&gt;只改变一个因素&lt;select id=&quot;upgrade&quot;&gt;&lt;option value=&quot;none&quot;&gt;原配置 · 基线&lt;/option&gt;&lt;option value=&quot;gpu&quot;&gt;假设 GPU 计算时间减半&lt;/option&gt;&lt;option value=&quot;cpu&quot;&gt;假设 CPU 预处理时间减半&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;&lt;/div&gt;&lt;div class=&quot;section-label&quot;&gt;同一尺度 · 左端 0 ms，右端 200 ms&lt;/div&gt;&lt;div class=&quot;small&quot;&gt;原配置：200 ms&lt;/div&gt;&#x27;+bars([20,80,20,25,15,40])+&#x27;&lt;div class=&quot;small&quot;&gt;当前实验：&#x27;+t+&#x27; ms&lt;/div&gt;&#x27;+bars(ds)+&#x27;&lt;div class=&quot;wrap&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;串行阶段&lt;/th&gt;&lt;th&gt;基线&lt;/th&gt;&lt;th&gt;当前假设&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&#x27;+[&#x27;采集与接收&#x27;,&#x27;CPU 解码 / 预处理&#x27;,&#x27;CPU↔GPU 传输&#x27;,&#x27;GPU 模型计算&#x27;,&#x27;后处理 / 规则&#x27;,&#x27;同步留痕与通知&#x27;].map((name,i)=&gt;&#x27;&lt;tr&gt;&lt;td&gt;&#x27;+name+&#x27;&lt;/td&gt;&lt;td&gt;&#x27;+[20,80,20,25,15,40][i]+&#x27; ms&lt;/td&gt;&lt;td&gt;&#x27;+ds[i]+&#x27; ms&lt;/td&gt;&lt;/tr&gt;&#x27;).join(&#x27;&#x27;)+&#x27;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;&lt;div class=&quot;statement&quot; aria-live=&quot;polite&quot;&gt;&lt;strong&gt;GPU &#x27;+ds[3]+&#x27; ms ≠ 端到端 &#x27;+t+&#x27; ms&lt;/strong&gt;&#x27;+(s.upgrade===&#x27;none&#x27;?&#x27;GPU 只占这条串行链路的 12.5%。&#x27;:&#x27;总耗时减少 &#x27;+(200-t)+&#x27; ms（&#x27;+((200-t)/200*100).toFixed(2)+&#x27;%），并非整机性能翻倍。&#x27;)+&#x27;&lt;/div&gt;&lt;p class=&quot;small&quot;&gt;这是单次确定性时延示例，不是 P95。多张图流水处理、GPU 预处理或异步保存时会出现重叠，不能照搬相加法推算吞吐。这里的“减半”也不是任何硬件升级的实测承诺。&lt;/p&gt;&#x27;;}
+else if(s.step===2){const z=simulate(),t=total(),r=s.cams*s.fps;html=&#x27;&lt;p&gt;单帧耗时没有变化，但任务来得更密了。这个实验仍是&lt;b&gt;一个串行处理槽&lt;/b&gt;：每次完成全部阶段才接下一张。增加相机不会自动增加处理槽。&lt;/p&gt;&lt;div class=&quot;fields&quot;&gt;&lt;label&gt;相机数量：&#x27;+s.cams+&#x27; 路&lt;input id=&quot;cams&quot; type=&quot;range&quot; min=&quot;1&quot; max=&quot;6&quot; value=&quot;&#x27;+s.cams+&#x27;&quot;&gt;&lt;/label&gt;&lt;label&gt;每路推理频率：&#x27;+s.fps+&#x27; 次/秒&lt;input id=&quot;fps&quot; type=&quot;range&quot; min=&quot;1&quot; max=&quot;5&quot; value=&quot;&#x27;+s.fps+&#x27;&quot;&gt;&lt;/label&gt;&lt;label&gt;配置假设&lt;select id=&quot;upgrade&quot;&gt;&lt;option value=&quot;none&quot;&gt;原配置 · 200 ms&lt;/option&gt;&lt;option value=&quot;gpu&quot;&gt;GPU 时间减半 · 187.5 ms&lt;/option&gt;&lt;option value=&quot;cpu&quot;&gt;CPU 预处理减半 · 160 ms&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;&lt;label&gt;等待队列策略&lt;select id=&quot;policy&quot;&gt;&lt;option value=&quot;all&quot;&gt;全部处理 · FIFO 排队&lt;/option&gt;&lt;option value=&quot;latest&quot;&gt;仅留一张最新等待帧 · 会丢任务&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;&lt;/div&gt;&lt;div class=&quot;section-label&quot;&gt;10 秒教学回放 · 到达均匀、首次在 t=0；统计至 t=10 秒&lt;/div&gt;&lt;div class=&quot;wrap&quot;&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;th&gt;任务到达&lt;/th&gt;&lt;td&gt;&#x27;+r+&#x27; 次/秒；共 &#x27;+z.arrivals+&#x27; 张&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th&gt;单槽服务上限&lt;/th&gt;&lt;td&gt;1000 ÷ &#x27;+t+&#x27; ≈ &#x27;+(1000/t).toFixed(2)+&#x27; 次/秒&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th&gt;已经完成&lt;/th&gt;&lt;td&gt;&#x27;+z.completed+&#x27; 张&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th&gt;正在处理 / 尚在等待&lt;/th&gt;&lt;td&gt;&#x27;+(z.current?1:0)+&#x27; / &#x27;+z.pending.length+&#x27; 张&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th&gt;被替换丢弃&lt;/th&gt;&lt;td&gt;&#x27;+z.dropped+&#x27; 张&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th&gt;最后一张已完成任务的端到端时延&lt;/th&gt;&lt;td&gt;&#x27;+z.lastAge.toFixed(1)+&#x27; ms（含排队，不是 P95）&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;&lt;div class=&quot;section-label&quot;&gt;尚在等待的任务编号（最多展示 12 张）&lt;/div&gt;&lt;div class=&quot;queue&quot;&gt;&#x27;+(z.pending.length?z.pending.slice(0,12).map(a=&gt;&#x27;&lt;span class=&quot;ticket&quot;&gt;&#x27;+a.id+&#x27;&lt;/span&gt;&#x27;).join(&#x27;&#x27;)+(z.pending.length&gt;12?&#x27;&lt;span class=&quot;small&quot;&gt;另有 &#x27;+(z.pending.length-12)+&#x27; 张&lt;/span&gt;&#x27;:&#x27;&#x27;):&#x27;&lt;span class=&quot;small&quot;&gt;无等待任务&lt;/span&gt;&#x27;)+&#x27;&lt;/div&gt;&lt;div class=&quot;statement&quot; aria-live=&quot;polite&quot;&gt;&lt;strong&gt;&#x27;+(s.policy===&#x27;latest&#x27;&amp;&amp;z.dropped?&#x27;队列变短，不等于每箱都检查过&#x27;:r&gt;1000/t?&#x27;来得比处理快，任务会积压&#x27;:r===1000/t?&#x27;恰好持平，尚无抖动余量&#x27;:&#x27;这个均匀到达实验没有持续积压&#x27;)+&#x27;&lt;/strong&gt;已完成 &#x27;+z.completed+&#x27; + 正在处理 &#x27;+(z.current?1:0)+&#x27; + 排队 &#x27;+z.pending.length+&#x27; + 丢弃 &#x27;+z.dropped+&#x27; = 到达 &#x27;+z.arrivals+&#x27;。&lt;/div&gt;&lt;p class=&quot;small warning&quot;&gt;只留最新帧是为了展示取舍，不是包装漏装推荐策略。它可能丢掉某箱唯一的检查机会。本模型把多路任务合并到一个队列；真实系统需按相机、箱 ID 和触发事件保留必要帧。实际同时触发会产生不同的排队结果。&lt;/p&gt;&#x27;;}
+else{const needs={camera:[&#x27;从 1 路扩展到多路&#x27;,&#x27;增加输入负载，不是先把 GPU 型号升一级。&#x27;,&#x27;相机 / 网卡 / 采集接口&#x27;,&#x27;采集总流量、接口共享、触发与丢帧&#x27;,&#x27;CPU / RAM&#x27;,&#x27;解码供帧能力、每路缓冲和同时来箱队列&#x27;,&#x27;GPU / 显存&#x27;,&#x27;完整负载吞吐、模型实例和并发峰值&#x27;],image:[&#x27;从 1080p 原图换到 4K&#x27;,&#x27;先明确模型输入是否变化。原图变大不等于模型计算量必然变大。&#x27;,&#x27;相机 / I/O&#x27;,&#x27;传输格式、压缩与实际数据量&#x27;,&#x27;CPU / RAM&#x27;,&#x27;解码缩放、原图缓冲和数据拷贝&#x27;,&#x27;GPU / SSD&#x27;,&#x27;是否切片增加调用；是否保存更多像素&#x27;],worker:[&#x27;增加 Worker&#x27;,&#x27;多进程是在改变调度和资源占用，不是在凭空增加 GPU。&#x27;,&#x27;GPU / 显存&#x27;,&#x27;独立模型副本、并发工作区、上下文与吞吐拐点&#x27;,&#x27;CPU / RAM&#x27;,&#x27;进程开销、数据复制、共享队列&#x27;,&#x27;框架 / 程序&#x27;,&#x27;Worker 的实际含义、模型是否共享、结果顺序&#x27;],retention:[&#x27;需要更多图片留痕&#x27;,&#x27;把图片保存当成独立负载，明确故障时能否缓冲、丢弃或暂停。&#x27;,&#x27;SSD / 存储&#x27;,&#x27;图片压缩后大小、保存速率、保留期与持续写入&#x27;,&#x27;RAM / 队列&#x27;,&#x27;异步写入队列的容量上限和回压行为&#x27;,&#x27;网络 / 运维&#x27;,&#x27;上传带宽、断网缓存、自动清理与恢复&#x27;]};const n=needs[s.need];html=&#x27;&lt;p&gt;下一台 IPC 的配置单应该由需求变化推导。选择一个变化，看看哪些部件需要重新验证。&lt;/p&gt;&lt;div class=&quot;fields&quot;&gt;&lt;label&gt;现场准备做什么变化？&lt;select id=&quot;need&quot;&gt;&lt;option value=&quot;camera&quot;&gt;增加相机 / 扩展线体&lt;/option&gt;&lt;option value=&quot;image&quot;&gt;使用更高分辨率原图&lt;/option&gt;&lt;option value=&quot;worker&quot;&gt;增加 Worker&lt;/option&gt;&lt;option value=&quot;retention&quot;&gt;保存更多图片&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;&lt;/div&gt;&lt;div class=&quot;statement&quot; aria-live=&quot;polite&quot;&gt;&lt;strong&gt;&#x27;+n[0]+&#x27;&lt;/strong&gt;&#x27;+n[1]+&#x27;&lt;/div&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;受影响部件&lt;/th&gt;&lt;th&gt;要补齐的证据&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&#x27;+n[2]+&#x27;&lt;/td&gt;&lt;td&gt;&#x27;+n[3]+&#x27;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&#x27;+n[4]+&#x27;&lt;/td&gt;&lt;td&gt;&#x27;+n[5]+&#x27;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&#x27;+n[6]+&#x27;&lt;/td&gt;&lt;td&gt;&#x27;+n[7]+&#x27;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;p&gt;不管哪种变化，还要检查主板插槽与通道、显卡尺寸、电源接口、机箱风道、环境温度，以及操作系统、驱动、推理框架和相机 SDK 是否兼容。&lt;/p&gt;&lt;div class=&quot;statement&quot;&gt;&lt;strong&gt;交付给供应商的不是一句“配一张强显卡”&lt;/strong&gt;而是：输入负载 + 程序配置 + 返回时限 + 留痕策略 + 环境条件 + 实机验收方法。没有测试数据的项，写“待验证”。&lt;/div&gt;&lt;p class=&quot;small&quot;&gt;下一章会把这些待验证项变成一套现场放行过程：先单路基线，再峰值并发，最后长稳和异常恢复。&lt;/p&gt;&lt;p class=&quot;small&quot;&gt;参考：&lt;a href=&quot;https://docs.nvidia.com/deeplearning/tensorrt/latest/performance/best-practices.html&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;NVIDIA TensorRT 性能最佳实践&lt;/a&gt;强调先建立可复现基线、定位后优化并复测，同时关注内存、传输、功率和温度。页面中的数字与实验均为独立教学假设。&lt;/p&gt;&#x27;;}
+q(&#x27;#ipc-content&#x27;).innerHTML=html;q(&#x27;#ipc-prev&#x27;).disabled=s.step===0;q(&#x27;#ipc-next&#x27;).disabled=s.step===3;q(&#x27;#ipc-next&#x27;).textContent=s.step===3?&#x27;本章结束&#x27;:&#x27;下一步 →&#x27;;if(s.step===0)root.querySelectorAll(&#x27;[data-part]&#x27;).forEach(b=&gt;b.onclick=()=&gt;{s.part=b.dataset.part;render()});if(s.step===1||s.step===2){q(&#x27;#upgrade&#x27;).value=s.upgrade;set(&#x27;upgrade&#x27;,&#x27;upgrade&#x27;)}if(s.step===2){q(&#x27;#policy&#x27;).value=s.policy;set(&#x27;policy&#x27;,&#x27;policy&#x27;);set(&#x27;cams&#x27;,&#x27;cams&#x27;,true);set(&#x27;fps&#x27;,&#x27;fps&#x27;,true)}if(s.step===3){q(&#x27;#need&#x27;).value=s.need;set(&#x27;need&#x27;,&#x27;need&#x27;)}}root.querySelectorAll(&#x27;[data-step]&#x27;).forEach(b=&gt;b.onclick=()=&gt;{s.step=Number(b.dataset.step);render()});q(&#x27;#ipc-prev&#x27;).onclick=()=&gt;{s.step--;render()};q(&#x27;#ipc-next&#x27;).onclick=()=&gt;{s.step++;render()};render()})();
+&lt;/script&gt;
+&lt;/div&gt;
+
+&lt;/section&gt;
+&lt;section class=&quot;book-pane&quot; id=&quot;book-panel-3&quot; role=&quot;tabpanel&quot; aria-labelledby=&quot;book-tab-3&quot;&gt;
+&lt;div id=&quot;validation-chapter&quot;&gt;
+&lt;style&gt;
+#validation-chapter{color-scheme:light;color:#243b35;background:#fff;font-family:system-ui,&#x27;Microsoft YaHei&#x27;,sans-serif;border:1px solid #e0e7e4;border-radius:12px;overflow:hidden}#validation-chapter *{box-sizing:border-box}#validation-chapter header{padding:20px 28px;border-bottom:1px solid #e0e7e4;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}#validation-chapter .brand{font-weight:700;color:#227659}#validation-chapter .meta{color:#617468;font-size:14px}#validation-chapter .layout{display:grid;grid-template-columns:195px minmax(0,1fr)}#validation-chapter nav{padding:24px 16px;background:#f6f9f7;border-right:1px solid #e0e7e4}#validation-chapter button{font:inherit;cursor:pointer}#validation-chapter nav button{display:block;width:100%;text-align:left;border:0;border-radius:6px;background:transparent;padding:12px 10px;margin-bottom:7px;color:#52665c;font-size:14px}#validation-chapter nav button[aria-current=step]{background:#dfefe6;color:#155e42;font-weight:700}#validation-chapter main{padding:32px;min-width:0}#validation-chapter .eyebrow{color:#227659;font-size:14px}#validation-chapter h2{font-size:27px;line-height:1.45;margin:10px 0 14px}#validation-chapter p{font-size:16px;line-height:1.85;margin:12px 0}#validation-chapter .fields{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}#validation-chapter label{font-size:14px;display:block;line-height:1.7}#validation-chapter input,#validation-chapter select{font:inherit;font-size:16px;width:100%;margin-top:6px;padding:10px;border:1px solid #b8cbc0;border-radius:6px;background:#fff;color:#243b35}#validation-chapter input[type=range]{padding:0;accent-color:#227659}#validation-chapter .statement{padding:20px;background:#f0f7f3;margin-top:20px;border-left:3px solid #227659;line-height:1.8}#validation-chapter .statement strong{font-size:22px;display:block}#validation-chapter .small{color:#617468;font-size:14px;line-height:1.75}#validation-chapter .foot{display:flex;justify-content:space-between;margin-top:25px;gap:15px}#validation-chapter .foot button{padding:10px 16px;border:1px solid #bdd0c5;border-radius:6px;background:#fff;color:#245e45}#validation-chapter .foot button.primary{background:#227659;color:#fff;border-color:#227659}#validation-chapter button:disabled{opacity:.4;cursor:default}#validation-chapter table{border-collapse:collapse;width:100%;font-size:14px;line-height:1.7}#validation-chapter td,#validation-chapter th{padding:11px 6px;border-bottom:1px solid #dbe6df;text-align:left;overflow-wrap:anywhere}#validation-chapter .strip{display:flex;gap:6px;flex-wrap:wrap;margin:24px 0}#validation-chapter .event{flex:1 1 110px;padding:14px;background:#ecf4ef;font-size:14px;border-radius:6px}#validation-chapter .event b{display:block;color:#227659;font-size:18px}#validation-chapter .trials{display:grid;grid-template-columns:repeat(20,minmax(0,1fr));gap:4px;margin:18px 0}#validation-chapter .trial{height:17px;background:#399c72}#validation-chapter .trial.slow{background:#dce5e0;outline:1px solid #52665c;outline-offset:-1px}#validation-chapter .wrap{overflow:auto}#validation-chapter .gate{padding:12px 0;border-bottom:1px solid #e0e7e4;display:grid;grid-template-columns:1fr 140px;gap:14px;align-items:center;font-size:14px}#validation-chapter .gate b{display:block;color:#227659;font-size:16px}#validation-chapter button:focus-visible{outline:3px solid #67a890;outline-offset:2px}@media(max-width:720px){#validation-chapter .layout{display:block}#validation-chapter nav{display:flex;flex-wrap:wrap;padding:10px;border-right:0}#validation-chapter nav button{width:auto;flex:1 1 40%;margin:0}#validation-chapter main{padding:22px}#validation-chapter .fields,#validation-chapter .gate{grid-template-columns:1fr}#validation-chapter h2{font-size:23px}#validation-chapter .trials{grid-template-columns:repeat(10,minmax(0,1fr))}}
+&lt;/style&gt;
+&lt;header&gt;&lt;span class=&quot;brand&quot;&gt;算力图解书 / 第四章 · 从跑通到现场放行&lt;/span&gt;&lt;span class=&quot;meta&quot;&gt;教学实验 · 不生成真实验收结论&lt;/span&gt;&lt;/header&gt;
+&lt;div class=&quot;layout&quot;&gt;&lt;nav aria-label=&quot;第四章步骤&quot;&gt;&lt;button data-step=&quot;0&quot; aria-current=&quot;step&quot;&gt;01　先约定“完成”的口径&lt;/button&gt;&lt;button data-step=&quot;1&quot;&gt;02　平均快，不代表每箱快&lt;/button&gt;&lt;button data-step=&quot;2&quot;&gt;03　长稳与异常怎么测&lt;/button&gt;&lt;button data-step=&quot;3&quot;&gt;04　把证据交给决策者&lt;/button&gt;&lt;/nav&gt;&lt;main&gt;&lt;div id=&quot;v-stage&quot; class=&quot;eyebrow&quot;&gt;&lt;/div&gt;&lt;h2 id=&quot;v-title&quot;&gt;&lt;/h2&gt;&lt;div id=&quot;v-content&quot;&gt;&lt;/div&gt;&lt;div class=&quot;foot&quot;&gt;&lt;button id=&quot;v-prev&quot;&gt;← 上一步&lt;/button&gt;&lt;button id=&quot;v-next&quot; class=&quot;primary&quot;&gt;下一步 →&lt;/button&gt;&lt;/div&gt;&lt;/main&gt;&lt;/div&gt;
+&lt;script&gt;
+(function(){const root=document.getElementById(&#x27;validation-chapter&#x27;),q=s=&gt;root.querySelector(s);const s={step:0,slow:5,budget:300,end:&#x27;notice&#x27;,case:&#x27;heat&#x27;,gates:[&#x27;unknown&#x27;,&#x27;unknown&#x27;,&#x27;unknown&#x27;,&#x27;unknown&#x27;]};const titles=[&#x27;算法算完，不等于业务完成&#x27;,&#x27;平均 216 ms，看起来达标，真的够吗？&#x27;,&#x27;运行 72 小时，还要证明什么？&#x27;,&#x27;不是点满四个勾，而是补齐四份证据&#x27;];function set(id,key,num){q(&#x27;#&#x27;+id).onchange=e=&gt;{if(!e.target.checkValidity()||(num&amp;&amp;!e.target.value)){e.target.reportValidity();return}s[key]=num?Number(e.target.value):e.target.value;render()}}function render(){q(&#x27;#v-stage&#x27;).textContent=&#x27;第四章 / &#x27;+(s.step+1)+&#x27; · 共 4 步&#x27;;q(&#x27;#v-title&#x27;).textContent=s.step===1?&#x27;平均值达标，尾部任务也达标吗？&#x27;:titles[s.step];root.querySelectorAll(&#x27;[data-step]&#x27;).forEach(b=&gt;b.setAttribute(&#x27;aria-current&#x27;,Number(b.dataset.step)===s.step?&#x27;step&#x27;:&#x27;false&#x27;));let html=&#x27;&#x27;;
+if(s.step===0){html=&#x27;&lt;p&gt;包装漏装场景中，结果要及时交给人工。先约定计时从哪里开始、到哪里结束，再讨论“时延达标”。以下是一箱的假设时间记录。&lt;/p&gt;&lt;div class=&quot;strip&quot;&gt;&lt;div class=&quot;event&quot;&gt;检查事件&lt;b&gt;t = 0 ms&lt;/b&gt;开始计时&lt;/div&gt;&lt;div class=&quot;event&quot;&gt;模型结果&lt;b&gt;t = 120 ms&lt;/b&gt;推理返回&lt;/div&gt;&lt;div class=&quot;event&quot;&gt;界面显示&lt;b&gt;t = 180 ms&lt;/b&gt;用户可见&lt;/div&gt;&lt;div class=&quot;event&quot;&gt;通知交付&lt;b&gt;t = 240 ms&lt;/b&gt;不等于人工已处理&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;fields&quot;&gt;&lt;label&gt;本次验收的终点&lt;select id=&quot;end&quot;&gt;&lt;option value=&quot;model&quot;&gt;模型返回&lt;/option&gt;&lt;option value=&quot;ui&quot;&gt;界面显示&lt;/option&gt;&lt;option value=&quot;notice&quot;&gt;通知交付&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;&lt;/div&gt;&lt;div class=&quot;statement&quot; aria-live=&quot;polite&quot;&gt;&lt;strong&gt;这次统计 &#x27;+({model:120,ui:180,notice:240}[s.end])+&#x27; ms&lt;/strong&gt;换了终点，指标就变了。不能拿模型耗时替代人工通知链路的端到端耗时。&lt;/div&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;th&gt;先冻结配置&lt;/th&gt;&lt;td&gt;模型与程序版本、输入尺寸、精度、Worker、相机数、处理频率、留痕方式、硬件和驱动。&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th&gt;再建立单路基线&lt;/th&gt;&lt;td&gt;记录每箱 ID、检查事件、输入帧、各阶段时间戳、结果及通知状态。跨设备时间戳需校时或明确误差。&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th&gt;补上触发延迟&lt;/th&gt;&lt;td&gt;若开始计时选“系统已发现事件”，会排除抽帧和事件识别等待。要评价真实业务响应，需从可观测业务事件算起。&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;p class=&quot;small&quot;&gt;这个数值序列只是教学示例。抽帧、状态识别、遮挡、通知重试和人工处理各有自己的时间边界。&lt;/p&gt;&#x27;;}
+else if(s.step===1){const data=Array(100-s.slow).fill(180).concat(Array(s.slow).fill(900)),mean=data.reduce((a,b)=&gt;a+b,0)/100,p95=data[94],p99=data[98],late=data.filter(v=&gt;v&gt;s.budget).length;html=&#x27;&lt;p&gt;模拟 100 次检查：常规任务 180 ms，慢任务 900 ms。拖动慢任务数量，看看平均值、P95、P99 和超时率何时发生变化。&lt;/p&gt;&lt;div class=&quot;fields&quot;&gt;&lt;label&gt;慢任务：&#x27;+s.slow+&#x27; / 100 次&lt;input id=&quot;slow&quot; type=&quot;range&quot; min=&quot;0&quot; max=&quot;20&quot; value=&quot;&#x27;+s.slow+&#x27;&quot;&gt;&lt;/label&gt;&lt;label&gt;业务时限（毫秒）&lt;input id=&quot;budget&quot; type=&quot;number&quot; min=&quot;1&quot; max=&quot;2000&quot; value=&quot;&#x27;+s.budget+&#x27;&quot;&gt;&lt;/label&gt;&lt;/div&gt;&lt;div class=&quot;trials&quot; role=&quot;img&quot; aria-label=&quot;100 个任务按耗时排序，绿色为 180 毫秒，灰色描边为 900 毫秒&quot;&gt;&#x27;+data.map(v=&gt;&#x27;&lt;i class=&quot;trial &#x27;+(v===900?&#x27;slow&#x27;:&#x27;&#x27;)+&#x27;&quot;&gt;&lt;/i&gt;&#x27;).join(&#x27;&#x27;)+&#x27;&lt;/div&gt;&lt;div class=&quot;small&quot;&gt;每格＝一次检查；绿色 180 ms，灰框 900 ms。按耗时排序，不是实际发生顺序。&lt;/div&gt;&lt;div class=&quot;wrap&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;指标&lt;/th&gt;&lt;th&gt;计算结果&lt;/th&gt;&lt;th&gt;说明&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;平均值&lt;/td&gt;&lt;td&gt;&#x27;+mean+&#x27; ms&lt;/td&gt;&lt;td&gt;总耗时 ÷ 100&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;P95&lt;/td&gt;&lt;td&gt;&#x27;+p95+&#x27; ms&lt;/td&gt;&lt;td&gt;排序后第 95 个值&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;P99&lt;/td&gt;&lt;td&gt;&#x27;+p99+&#x27; ms&lt;/td&gt;&lt;td&gt;排序后第 99 个值&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;超过 &#x27;+s.budget+&#x27; ms&lt;/td&gt;&lt;td&gt;&#x27;+late+&#x27; 次 / &#x27;+late+&#x27;%&lt;/td&gt;&lt;td&gt;严格大于时限；等于不计超时&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;&lt;div class=&quot;statement&quot; aria-live=&quot;polite&quot;&gt;&lt;strong&gt;&#x27;+((mean&lt;=s.budget&amp;&amp;late&gt;0)?&#x27;平均值通过，仍有 &#x27;+late+&#x27; 次超时&#x27;:late?&#x27;有 &#x27;+late+&#x27; 次未满足时限&#x27;:&#x27;本组教学样本没有超时&#x27;)+&#x27;&lt;/strong&gt;吞吐、尾部时延和未完成任务，要同时检查。超时是否允许、允许多少，应在测试前约定。&lt;/div&gt;&lt;p class=&quot;small&quot;&gt;这里采用 nearest-rank 分位数，P95/P99 不做插值。本组全部任务已完成；真实测试要另外统计丢失、取消和无结果的箱，不能让这些箱从指标分母中消失。100 次样本也不能证明长期失效率。&lt;/p&gt;&#x27;;}
+else if(s.step===2){const cases={heat:[&#x27;温度升高 / 长稳变慢&#x27;,&#x27;记录相同业务负载下的温度、频率、分段时延和吞吐，比较开始与后期，而不只记录“没崩溃”。&#x27;,&#x27;温度上升不等于已经降频；结合频率、功率与负载定位原因。&#x27;,&#x27;改善风道或调整功耗后，在相同条件下复测，保留前后对比。&#x27;],disconnect:[&#x27;相机断流 / 重连&#x27;,&#x27;在隔离测试环境模拟断流，观察是否报警、标记缺失数据并阻止使用过期结果。&#x27;,&#x27;重连成功不代表箱 ID 和缓存状态已经恢复正确。&#x27;,&#x27;检查时间戳、清理或隔离旧帧，重新建立箱状态；受影响箱交人工确认。&#x27;],disk:[&#x27;磁盘满 / 留痕失败&#x27;,&#x27;在隔离环境使用受限测试目录，观察保存失败是否被识别，队列是否有界，通知是否受到影响。&#x27;,&#x27;日志显示“推理成功”不代表图片已成功保存。&#x27;,&#x27;按事先约定选择报警、暂停或降级；恢复空间后验证补传和记录完整性。&#x27;],occlusion:[&#x27;遮挡 / 初始状态不明&#x27;,&#x27;覆盖未装满、遮挡、新箱遮旧箱、进入时已封闭等样本，逐箱核对 Full / Not Full / Uncertain。&#x27;,&#x27;只看总体正确率会掩盖漏检；Uncertain 不能自动当 Full。&#x27;,&#x27;记录真实状态与预测结果，分别统计漏检、误报和不确定；验证人工通知及处置。&#x27;]},c=cases[s.case];html=&#x27;&lt;p&gt;现场验收既要测“忙的时候”，也要测“出问题的时候”。长稳测试时长按风险、班次和故障模式确定；24/72 小时可以是计划的一部分，不是通用放行标准。&lt;/p&gt;&lt;div class=&quot;fields&quot;&gt;&lt;label&gt;想检验哪一种现场风险？&lt;select id=&quot;case&quot;&gt;&lt;option value=&quot;heat&quot;&gt;温度升高 / 长稳变慢&lt;/option&gt;&lt;option value=&quot;disconnect&quot;&gt;相机断流 / 重连&lt;/option&gt;&lt;option value=&quot;disk&quot;&gt;磁盘满 / 留痕失败&lt;/option&gt;&lt;option value=&quot;occlusion&quot;&gt;遮挡 / 初始状态不明&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;&lt;/div&gt;&lt;div class=&quot;statement&quot; aria-live=&quot;polite&quot;&gt;&lt;strong&gt;&#x27;+c[0]+&#x27;&lt;/strong&gt;&#x27;+c[1]+&#x27;&lt;/div&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;th&gt;容易误判的“成功”&lt;/th&gt;&lt;td&gt;&#x27;+c[2]+&#x27;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th&gt;整改与复测&lt;/th&gt;&lt;td&gt;&#x27;+c[3]+&#x27;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th&gt;共同保留的证据&lt;/th&gt;&lt;td&gt;配置版本、发生时间、原始日志、受影响箱 ID、预期行为、实际行为、恢复时间和复测结果。&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;p class=&quot;small&quot;&gt;峰值测试需要覆盖同时触发、并行留痕、换型及后台任务。质量验证需有独立标注真值；故障演练必须经过批准并在隔离环境开展，不能直接在运行产线上制造中断。&lt;/p&gt;&#x27;;}
+else{const names=[&#x27;单路性能基线&#x27;,&#x27;峰值并发与资源&#x27;,&#x27;检测质量与人工闭环&#x27;,&#x27;长稳与异常恢复&#x27;],desc=[&#x27;口径一致、配置固定、各阶段可追溯&#x27;,&#x27;吞吐、P95/P99、超时、显存及队列&#x27;,&#x27;每箱有记录，漏检/误报/不确定分开&#x27;,&#x27;跨班运行、故障可见、恢复与回滚可验证&#x27;];const fail=s.gates.filter(x=&gt;x===&#x27;fail&#x27;).length,missing=s.gates.filter(x=&gt;x===&#x27;unknown&#x27;).length;html=&#x27;&lt;p&gt;把证据状态交给项目负责人。下面只演示评审逻辑：选择“已满足”不会自动证明真实测试通过，也不会替代正式审批。&lt;/p&gt;&#x27;+names.map((n,i)=&gt;&#x27;&lt;div class=&quot;gate&quot;&gt;&lt;div&gt;&lt;b&gt;&#x27;+n+&#x27;&lt;/b&gt;&#x27;+desc[i]+&#x27;&lt;/div&gt;&lt;label&gt;&lt;span class=&quot;small&quot;&gt;证据状态&lt;/span&gt;&lt;select id=&quot;gate&#x27;+i+&#x27;&quot;&gt;&lt;option value=&quot;unknown&quot;&gt;待验证&lt;/option&gt;&lt;option value=&quot;fail&quot;&gt;未满足&lt;/option&gt;&lt;option value=&quot;pass&quot;&gt;已满足（模拟）&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;&lt;/div&gt;&#x27;).join(&#x27;&#x27;)+&#x27;&lt;div class=&quot;statement&quot; aria-live=&quot;polite&quot;&gt;&lt;strong&gt;&#x27;+(fail?&#x27;存在 &#x27;+fail+&#x27; 项未满足：整改后复测&#x27;:missing?&#x27;缺少 &#x27;+missing+&#x27; 项证据：不能形成放行结论&#x27;:&#x27;模拟证据齐备：提交正式评审&#x27;)+&#x27;&lt;/strong&gt;&#x27;+(fail?&#x27;注明责任人、措施和复测条件；其他项通过不能抵消关键失败。&#x27;:missing?&#x27;未知保持未知，不按“默认通过”处理。&#x27;:&#x27;核查原始记录、业务验收标准、版本、责任人及适用线体，再由授权负责人决定。&#x27;)+&#x27;&lt;/div&gt;&lt;p&gt;最后交付：需求与时限 → 当前配置 → 测试条件与记录 → 未解决风险 → 适用范围。以后增加相机、升级模型、改变 Worker 或留痕策略时，重新评估受影响的证据。&lt;/p&gt;&lt;p class=&quot;small&quot;&gt;本章没有连接实际设备、读取生产数据或执行测试；所有操作仅用于理解验收过程。&lt;/p&gt;&#x27;;}
+q(&#x27;#v-content&#x27;).innerHTML=html;q(&#x27;#v-prev&#x27;).disabled=s.step===0;q(&#x27;#v-next&#x27;).disabled=s.step===3;q(&#x27;#v-next&#x27;).textContent=s.step===3?&#x27;本章结束&#x27;:&#x27;下一步 →&#x27;;if(s.step===0){q(&#x27;#end&#x27;).value=s.end;set(&#x27;end&#x27;,&#x27;end&#x27;)}if(s.step===1){set(&#x27;slow&#x27;,&#x27;slow&#x27;,true);set(&#x27;budget&#x27;,&#x27;budget&#x27;,true)}if(s.step===2){q(&#x27;#case&#x27;).value=s.case;set(&#x27;case&#x27;,&#x27;case&#x27;)}if(s.step===3)s.gates.forEach((v,i)=&gt;{q(&#x27;#gate&#x27;+i).value=v;q(&#x27;#gate&#x27;+i).onchange=e=&gt;{s.gates[i]=e.target.value;render()}})}root.querySelectorAll(&#x27;[data-step]&#x27;).forEach(b=&gt;b.onclick=()=&gt;{s.step=Number(b.dataset.step);render()});q(&#x27;#v-prev&#x27;).onclick=()=&gt;{s.step--;render()};q(&#x27;#v-next&#x27;).onclick=()=&gt;{s.step++;render()};render()})();
+&lt;/script&gt;
+&lt;/div&gt;
+
+&lt;/section&gt;
+&lt;style&gt;
+#compute-book #hardware-chapter,#compute-book #ipc-chapter{--paper:#fff;--ink:#243b35;--soft:#f6f9f7;--edge:#e0e7e4;--green:#227659;--fill:#399c72;--dim:#617468;--call:#f0f7f3;--warn:#925c23;--warning:#925c23;color-scheme:light}
+#compute-book #compute-chapter-preview{color-scheme:light}
+#compute-book #hardware-chapter nav button[aria-current=step],#compute-book #ipc-chapter nav button[aria-current=step]{background:#dfefe6;color:#155e42}
+#compute-book #hardware-chapter .foot button.primary,#compute-book #ipc-chapter .foot button.primary{background:#227659;color:#fff;border-color:#227659}
+#compute-book #hardware-chapter input,#compute-book #hardware-chapter select,#compute-book #ipc-chapter input,#compute-book #ipc-chapter select{border-color:#b8cbc0}
+#compute-book #ipc-chapter .strip i.cpu{background:#8bb49c}
+#compute-book #ipc-chapter .strip i.io{background:#bfd4c5}
+#compute-book #ipc-chapter .strip i.misc{background:#dce5e0}
+&lt;/style&gt;
+&lt;script&gt;
+(function(){const book=document.getElementById(&#x27;compute-book&#x27;),tabs=[...book.querySelectorAll(&#x27;.book-tabs [data-chapter]&#x27;)];function select(i){tabs.forEach((b,k)=&gt;{b.setAttribute(&#x27;aria-selected&#x27;,k===i?&#x27;true&#x27;:&#x27;false&#x27;);book.querySelector(&#x27;#book-panel-&#x27;+k).hidden=k!==i})}tabs.forEach((b,i)=&gt;{b.onclick=()=&gt;select(i);b.onkeydown=e=&gt;{let n=i;if(e.key===&#x27;ArrowRight&#x27;)n=(i+1)%4;else if(e.key===&#x27;ArrowLeft&#x27;)n=(i+3)%4;else if(e.key===&#x27;Home&#x27;)n=0;else if(e.key===&#x27;End&#x27;)n=3;else return;e.preventDefault();select(n);tabs[n].focus()}})})();
+&lt;/script&gt;
+&lt;/div&gt;
+
+&lt;script src=&quot;https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set([&quot;top&quot;, &quot;right&quot;, &quot;bottom&quot;, &quot;left&quot;]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+  let lastPointerWasTouch = false;
+  let pinnedByTouch = false;
+
+  const getTrigger = (target) =&gt;
+    target?.nodeType === Node.ELEMENT_NODE
+      ? target.closest(&quot;[data-tooltip]&quot;)
+      : null;
+  const containsTarget = (trigger, target) =&gt;
+    target?.nodeType != null &amp;&amp; trigger.contains(target);
+  const getContent = (trigger) =&gt;
+    trigger.getAttribute(&quot;data-tooltip&quot;)?.trim() ?? &quot;&quot;;
+  const getPlacement = (trigger) =&gt; {
+    const placement = trigger.getAttribute(&quot;data-tooltip-placement&quot;);
+    return tooltipPlacements.has(placement) ? placement : &quot;top&quot;;
+  };
+  const getTooltip = () =&gt; {
+    if (tooltip == null) {
+      tooltip = document.createElement(&quot;div&quot;);
+      tooltip.id = tooltipId;
+      tooltip.className = &quot;tooltip&quot;;
+      tooltip.setAttribute(&quot;role&quot;, &quot;tooltip&quot;);
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) =&gt; {
+    const ids = new Set(
+      (trigger.getAttribute(&quot;aria-describedby&quot;) ?? &quot;&quot;)
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute(&quot;aria-describedby&quot;);
+    } else {
+      trigger.setAttribute(&quot;aria-describedby&quot;, [...ids].join(&quot; &quot;));
+    }
+  };
+  const clearOpenTimeout = () =&gt; {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) =&gt; {
+    clearOpenTimeout();
+    pinnedByTouch = false;
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) =&gt; {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-width&quot;,
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-height&quot;,
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: &quot;fixed&quot;,
+    })
+      .then(({ x, y }) =&gt; {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = &quot;visible&quot;;
+      })
+      .catch(() =&gt; {
+        if (activeTrigger === trigger &amp;&amp; request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) =&gt; {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = &quot;hidden&quot;;
+    floating.style.transform = &quot;translate(0, 0)&quot;;
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () =&gt; {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) =&gt; {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() &lt; skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() =&gt; {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) =&gt; {
+    if (event.pointerType === &quot;touch&quot;) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handlePointer = (event) =&gt; {
+    lastPointerWasTouch =
+      event.type === &quot;pointerdown&quot; &amp;&amp; event.pointerType === &quot;touch&quot;;
+  };
+  const handleTouchClick = (event) =&gt; {
+    const isTouch = event.pointerType === &quot;touch&quot; || lastPointerWasTouch;
+    lastPointerWasTouch = false;
+    if (!isTouch || event.detail === 0) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (
+      trigger == null ||
+      !trigger.isConnected ||
+      getContent(trigger).length === 0 ||
+      (pinnedByTouch &amp;&amp; activeTrigger === trigger)
+    ) {
+      if (pinnedByTouch) {
+        closeTooltip();
+      }
+      return;
+    }
+    openTooltip(trigger);
+    pinnedByTouch = activeTrigger === trigger;
+    window.setTimeout(() =&gt; {
+      if (activeTrigger === trigger &amp;&amp; !trigger.isConnected) {
+        closeTooltip(false);
+      }
+    }, 0);
+  };
+  const handleLeave = (event) =&gt; {
+    if (pinnedByTouch) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger?.matches(&quot;:focus-visible&quot;)) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) =&gt; {
+    if (event.key === &quot;Escape&quot;) {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) =&gt; {
+    lastPointerWasTouch = false;
+    const trigger = getTrigger(event.target);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const destroy = () =&gt; {
+    closeTooltip(false);
+    lastPointerWasTouch = false;
+    document.removeEventListener(&quot;pointerover&quot;, handlePointerOpen);
+    document.removeEventListener(&quot;pointerdown&quot;, handlePointer);
+    document.removeEventListener(&quot;pointercancel&quot;, handlePointer);
+    document.removeEventListener(&quot;click&quot;, handleTouchClick);
+    document.removeEventListener(&quot;pointerout&quot;, handleLeave);
+    document.removeEventListener(&quot;focusin&quot;, handleFocusIn);
+    document.removeEventListener(&quot;focusout&quot;, handleLeave);
+    document.removeEventListener(&quot;keydown&quot;, handleKeyDown);
+    document.removeEventListener(&quot;contextmenu&quot;, handleContextMenu);
+    tooltip = null;
+  };
+
+  document.addEventListener(&quot;pointerover&quot;, handlePointerOpen);
+  document.addEventListener(&quot;pointerdown&quot;, handlePointer);
+  document.addEventListener(&quot;pointercancel&quot;, handlePointer);
+  document.addEventListener(&quot;click&quot;, handleTouchClick);
+  document.addEventListener(&quot;pointerout&quot;, handleLeave);
+  document.addEventListener(&quot;focusin&quot;, handleFocusIn);
+  document.addEventListener(&quot;focusout&quot;, handleLeave);
+  document.addEventListener(&quot;keydown&quot;, handleKeyDown);
+  document.addEventListener(&quot;contextmenu&quot;, handleContextMenu);
+  window.addEventListener(&quot;pagehide&quot;, destroy, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-tabs&quot;&gt;
+(() =&gt; {
+  const selector = &#x27;.nav[role=&quot;tablist&quot;] [role=&quot;tab&quot;]&#x27;;
+  const disabled = &#x27;:disabled,[aria-disabled=&quot;true&quot;]&#x27;;
+  const selectTab = (selected) =&gt; {
+    const panelId = selected.getAttribute(&quot;aria-controls&quot;);
+    for (const tab of selected.closest(&#x27;[role=&quot;tablist&quot;]&#x27;).querySelectorAll(&#x27;[role=&quot;tab&quot;]&#x27;)) {
+      const active = tab === selected;
+      tab.classList.toggle(&quot;active&quot;, active);
+      tab.setAttribute(&quot;aria-selected&quot;, String(active));
+      const id = tab.getAttribute(&quot;aria-controls&quot;);
+      const panel = id &amp;&amp; document.getElementById(id);
+      if (panel != null) {
+        panel.hidden = id !== panelId;
+        if (!panel.hidden &amp;&amp; selected.id) {
+          panel.setAttribute(&quot;aria-labelledby&quot;, selected.id);
+        }
+      }
+    }
+  };
+  const interact = (event) =&gt; {
+    const tab = event.target?.closest?.(selector);
+    if (event.defaultPrevented || tab == null || tab.matches(disabled)) {
+      return;
+    }
+    if (event.type === &quot;click&quot;) {
+      selectTab(tab);
+      return;
+    }
+    const tabs = Array.from(
+      tab.closest(&#x27;[role=&quot;tablist&quot;]&#x27;).querySelectorAll(&#x27;[role=&quot;tab&quot;]&#x27;),
+    ).filter((candidate) =&gt; !candidate.matches(disabled));
+    const current = tabs.indexOf(tab);
+    let next;
+    if (event.key === &quot;ArrowRight&quot; || event.key === &quot;ArrowDown&quot;) {
+      next = (current + 1) % tabs.length;
+    } else if (event.key === &quot;ArrowLeft&quot; || event.key === &quot;ArrowUp&quot;) {
+      next = (current + tabs.length - 1) % tabs.length;
+    } else if (event.key === &quot;Home&quot;) {
+      next = 0;
+    } else if (event.key === &quot;End&quot;) {
+      next = tabs.length - 1;
+    } else {
+      return;
+    }
+    event.preventDefault();
+    tabs[next].focus();
+    selectTab(tabs[next]);
+  };
+
+  for (const list of document.querySelectorAll(&#x27;.nav[role=&quot;tablist&quot;]&#x27;)) {
+    const selected =
+      list.querySelector(&#x27;[role=&quot;tab&quot;][aria-selected=&quot;true&quot;]&#x27;) ??
+      list.querySelector(&#x27;[role=&quot;tab&quot;].active&#x27;) ??
+      list.querySelector(&#x27;[role=&quot;tab&quot;]&#x27;);
+    if (selected != null) {
+      selectTab(selected);
+    }
+  }
+  document.addEventListener(&quot;click&quot;, interact);
+  document.addEventListener(&quot;keydown&quot;, interact);
+  window.addEventListener(&quot;pagehide&quot;, () =&gt; {
+    document.removeEventListener(&quot;click&quot;, interact);
+    document.removeEventListener(&quot;keydown&quot;, interact);
+  }, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-lucide&quot; async src=&quot;https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  const initialize = () =&gt; {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById(&quot;codex-visualization-lucide&quot;)
+    ?.addEventListener(&quot;load&quot;, initialize, { once: true });
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+<script>(() => {
+  const frame = document.getElementById("codex-visualization");
+  if (!(frame instanceof HTMLIFrameElement)) {
+    return;
+  }
+  let viewportHeight = globalThis.innerHeight;
+  const storageKey = `codex:visualization-widget-state-v2:${JSON.stringify([
+    globalThis.location.pathname,
+    globalThis.location.search,
+  ])}`;
+  const parseState = (serializedState) => {
+    if (
+      typeof serializedState !== "string" ||
+      new TextEncoder().encode(serializedState).length > 16 * 1024
+    ) {
+      throw new TypeError(
+        "Widget state must be a JSON object of at most 16 KiB",
+      );
+    }
+    /** @type {unknown} */
+    const state = JSON.parse(serializedState);
+    if (
+      state == null ||
+      typeof state !== "object" ||
+      Array.isArray(state) ||
+      ("imageIds" in state &&
+        (!Array.isArray(state.imageIds) || state.imageIds.length > 0))
+    ) {
+      throw new TypeError("Widget state must be a JSON object");
+    }
+    const storedState = { modelContent: null, privateContent: null, ...state };
+    const canonicalState = JSON.stringify(
+      storedState,
+      (_key, /** @type {unknown} */ value) => {
+        if (typeof value === "number" && !Number.isFinite(value)) {
+          throw new TypeError("Widget state must contain finite numbers");
+        }
+        return value;
+      },
+    );
+    if (new TextEncoder().encode(canonicalState).length > 16 * 1024) {
+      throw new TypeError(
+        "Widget state must be a JSON object of at most 16 KiB",
+      );
+    }
+    return storedState;
+  };
+  let storage = null;
+  let state = null;
+  try {
+    const localStorage = globalThis.localStorage;
+    const probeKey = `${storageKey}:probe`;
+    localStorage.setItem(probeKey, "1");
+    localStorage.removeItem(probeKey);
+    storage = localStorage;
+    const savedState = storage.getItem(storageKey);
+    if (savedState != null) {
+      try {
+        state = parseState(savedState);
+      } catch {
+        // Invalid saved state does not disable future writes.
+      }
+    }
+  } catch {
+    storage = null;
+  }
+  const initialGlobals = {
+    widgetState: state,
+    statePersistence: storage == null ? "none" : "local",
+  };
+
+  const channel = new MessageChannel();
+  channel.port1.addEventListener("message", (event) => {
+    const data = event.data;
+    if (typeof data !== "object" || data == null) {
+      return;
+    }
+    if (data.type === "widget-state-write") {
+      if (!Number.isSafeInteger(data.id) || data.id <= 0) {
+        return;
+      }
+      let ok = false;
+      try {
+        if (storage != null) {
+          const state = parseState(data.state);
+          storage.setItem(storageKey, JSON.stringify(state));
+          ok = true;
+        }
+      } catch {
+        // Storage denial, quota limits, and invalid state return a failed receipt.
+      }
+      channel.port1.postMessage({
+        type: "widget-state-result",
+        id: data.id,
+        ok,
+      });
+      return;
+    }
+    if (data.type === "height") {
+      const height = data.height;
+      if (
+        typeof height === "number" &&
+        Number.isFinite(height) &&
+        height >= 0 &&
+        height <= 10_000
+      ) {
+        frame.style.height = Math.ceil(height) + "px";
+      }
+      return;
+    }
+    if (data.type === "scroll-to") {
+      const top = data.top;
+      if (
+        typeof top === "number" &&
+        Number.isFinite(top) &&
+        top >= 0 &&
+        globalThis.navigator.userActivation?.isActive === true
+      ) {
+        globalThis.scrollTo({
+          top: Math.ceil(
+            globalThis.scrollY + frame.getBoundingClientRect().top + top,
+          ),
+        });
+      }
+      return;
+    }
+    if (data.type === "open-external") {
+      const rawHref = data.href;
+      if (typeof rawHref !== "string") {
+        return;
+      }
+      let href;
+      try {
+        const url = new URL(rawHref, document.baseURI);
+        if (url.protocol !== "https:") {
+          return;
+        }
+        href = url.href;
+      } catch {
+        return;
+      }
+      if (globalThis.navigator.userActivation?.isActive === true) {
+        const anchor = document.createElement("a");
+        anchor.href = href;
+        anchor.rel = "noopener noreferrer";
+        anchor.target = "_blank";
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+      }
+      return;
+    }
+    if (data.type === "follow-up") {
+      const prompt = data.prompt;
+      if (
+        typeof prompt !== "string" ||
+        globalThis.navigator.userActivation?.isActive !== true
+      ) {
+        return;
+      }
+      const title = data.title;
+      globalThis.prompt(typeof title === "string" ? title : prompt, prompt);
+    }
+  });
+  channel.port1.start();
+  const srcdoc = frame.dataset.srcdoc;
+  if (srcdoc == null) {
+    return;
+  }
+  globalThis.addEventListener("resize", () => {
+    const height = Number.parseFloat(frame.style.height);
+    if (!Number.isFinite(height) || height <= viewportHeight) {
+      frame.style.removeProperty("height");
+    }
+    viewportHeight = globalThis.innerHeight;
+    channel.port1.postMessage({ type: "measure" });
+  });
+  frame.addEventListener(
+    "load",
+    () => {
+      frame.contentWindow?.postMessage(
+        { type: "codex-visualization-initialize" },
+        "*",
+        [channel.port2],
+      );
+    },
+    { once: true },
+  );
+  // Match the trusted bootstrap element, not the same text in an authored title.
+  frame.srcdoc = srcdoc.replace(
+    '<script type="application/json" id="codex-visualization-widget-state">__CODEX_VISUALIZATION_WIDGET_STATE__<\/script>',
+    () =>
+      '<script type="application/json" id="codex-visualization-widget-state">' +
+      JSON.stringify(initialGlobals).replaceAll("<", "\\u003c") +
+      "<\/script>",
+  );
+  delete frame.dataset.srcdoc;
+})();
+</script>
+</body>
+</html>
